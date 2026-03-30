@@ -1,3 +1,3 @@
-import { app } from '@/app/app'
+import { bootstrap } from '@/app/app'
 
-app.$mount('#app')
+bootstrap()

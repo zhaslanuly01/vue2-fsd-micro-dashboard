@@ -1,3 +1,15 @@
+import Vue from 'vue'
+import type Router from 'vue-router'
+import type { Store } from 'vuex'
+
+declare module 'vue/types/vue' {
+  interface Vue {
+    $router: Router
+    $route: import('vue-router').Route
+    $store: Store<any>
+  }
+}
+
 declare const _brand: unique symbol
 
 declare global {

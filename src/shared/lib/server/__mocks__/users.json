@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "email": "admin@email.com",
+    "password": "adminadmin",
+    "name": "Islam",
+    "surname": "Zhaslanuly",
+    "middle_name": "",
+    "organization_id": 101,
+    "avatar_url": "https://i.pravatar.cc/150?img=12",
+    "role": "admin"
+  }
+]
