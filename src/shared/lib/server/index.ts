@@ -1,3 +1,11 @@
 export { db as __serverDatabase } from './serverDb'
 export { startDatabaseMigration as __serverStartDatabaseMigration } from './migrationDb'
+
 export { default as usersMock } from './__mocks__/users.json'
+export { default as wellsMock } from './__mocks__/well.json'
+export { default as oilFieldsMock } from './__mocks__/oil-fields.json'
+export { default as equipmentMock } from './__mocks__/equipment.json'
+export { default as maintenanceRequestsMock } from './__mocks__/maintenance-requests.json'
+export { default as storageTanksMock } from './__mocks__/storage-tanks.json'
+export { default as ecoStationsMock } from './__mocks__/eco-station.json'
+export { default as pipelineSectionsMock } from './__mocks__/pipeline-sections.json'

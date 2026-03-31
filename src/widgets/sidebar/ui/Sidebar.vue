@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { sidebarConfig } from '../lib/sidebar_config.constants'
+import { sidebarConfig } from '../lib/sidebar.config.constants'
 </script>
 
 <style scoped>
@@ -58,15 +58,6 @@ import { sidebarConfig } from '../lib/sidebar_config.constants'
   padding: 24px;
 }
 
-.app-sidebar__menu :deep(.el-menu-item) {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  padding: 0 16px !important;
-}
-
 .app-sidebar__menu :deep(.el-menu-item.is-active .app-sidebar__label) {
   font-weight: 600;
 }
@@ -88,7 +79,22 @@ import { sidebarConfig } from '../lib/sidebar_config.constants'
   flex-shrink: 0;
 }
 
+.app-sidebar__menu :deep(.el-menu-item) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  padding: 0 16px !important;
+  min-width: 0;
+}
+
 .app-sidebar__label {
   color: inherit;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
