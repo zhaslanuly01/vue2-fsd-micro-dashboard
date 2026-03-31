@@ -1,12 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { auth } from './modules/auth'
+import { wellModule } from '@/entities/well'
 
 Vue.use(Vuex)
 
 export const store = new Vuex.Store({
   modules: {
-    auth
+    auth,
+    well: wellModule
   }
 })
 

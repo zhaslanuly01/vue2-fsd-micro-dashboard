@@ -3,6 +3,7 @@ import Router, { type RouteConfig } from 'vue-router'
 import { store } from '@/app/providers/store'
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
+import { WellPage } from '@/pages/well'
 
 Vue.use(Router)
 
@@ -25,6 +26,11 @@ const routes: RouteConfig[] = [
       guestOnly: true,
       layout: 'empty'
     }
+  },
+  {
+    path: '/well',
+    name: 'well',
+    component: WellPage
   },
   {
     path: '*',

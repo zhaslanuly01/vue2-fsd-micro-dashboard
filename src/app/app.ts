@@ -1,14 +1,15 @@
-import Vue from 'vue'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import Vue from 'vue'
 
-import App from './App.vue'
-import { router, store } from './providers'
+import { __serverStartDatabaseMigration } from '@/shared/lib/server'
 import '@/shared/styles/global.css'
 import '@/shared/styles/reset.css'
-import { __serverStartDatabaseMigration } from '@/shared/lib/server'
+import locale from 'element-ui'
+import App from './App.vue'
+import { router, store } from './providers'
 
-Vue.use(ElementUI)
+Vue.use(ElementUI, { locale })
 
 async function enableMocking() {
   if (!import.meta.env.DEV) {
