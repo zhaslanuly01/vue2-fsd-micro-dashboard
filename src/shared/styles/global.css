@@ -1,0 +1,391 @@
+:root {
+  --scrollbar-width: calc(100vw - 100%);
+
+  /* COLORS */
+  --color-white: #ffffff;
+  --fill-secondary: #f5f5f5;
+  --label-primary: #1e1e1e;
+  --color-primary: #3967ba;
+  --color-success: #52c41a;
+  --color-error: #ff4d4f;
+  --color-warning: #faad14;
+  --color-info: #1890ff;
+
+  --font-family: 'Inter, sans-serif';
+  --font-size: 14px;
+  --font-weight-base: 400;
+  --font-weight-strong: 600;
+
+  /* Light */
+  /* color */
+  --blue-blue-1: #e6f4ff;
+  --blue-blue-10: #001d66;
+  --blue-blue-2: #bae0ff;
+  --blue-blue-3: #91caff;
+  --blue-blue-4: #69b1ff;
+  --blue-blue-5: #4096ff;
+  --blue-blue-6: #1677ff;
+  --blue-blue-7: #0958d9;
+  --blue-blue-8: #003eb3;
+  --blue-blue-9: #1f61b7;
+  --gold-gold-1: #fffbe6;
+  --gold-gold-2: #fff1b8;
+  --gold-gold-3: #ffe58f;
+  --gold-gold-4: #ffd666;
+  --gold-gold-5: #ffc53d;
+  --gold-gold-6: #faad14;
+  --green-green-1: #f1ffe3;
+  --green-green-2: #d9f7be;
+  --green-green-3: #b7eb8f;
+  --green-green-4: #95de64;
+  --green-green-5: #73d13d;
+  --green-green-6: #52c41a;
+  --neutral-gray-1: #ffffff;
+  --neutral-gray-10: #262626;
+  --neutral-gray-11: #1e1e1e;
+  --neutral-gray-12: #141414;
+  --neutral-gray-13: #000000;
+  --neutral-gray-2: #fafafa;
+  --neutral-gray-3: #f5f5f5;
+  --neutral-gray-4: #f0f0f0;
+  --neutral-gray-5: #d9d9d9;
+  --neutral-gray-6: #c7c7cc;
+  --neutral-gray-7: #8c8c8c;
+  --neutral-gray-8: #595959;
+  --neutral-gray-9: #434343;
+  --purple-purple-1: #f9f0ff;
+  --purple-purple-2: #efdbff;
+  --purple-purple-3: #d3adf7;
+  --purple-purple-4: #b37feb;
+  --purple-purple-5: #9254de;
+  --purple-purple-6: #722ed1;
+  --red-red-1: #fff1f0;
+  --red-red-2: #ffccc7;
+  --red-red-3: #ffa39e;
+  --red-red-4: #ff7875;
+  --red-red-5: #ff4d4f;
+  --red-red-6: #f5222d;
+  --red-red-7: #cf1322;
+  --red-red-8: #a8071a;
+  --transparent-black-15: #00000026;
+  --transparent-black-2: #00000005;
+  --transparent-black-25: #00000040;
+  --transparent-black-4: #0000000a;
+  --transparent-black-45: #00000073;
+  --transparent-black-6: #0000000f;
+  --transparent-black-75: #000000bf;
+  --transparent-black-88: #000000e0;
+  --transparent-black-95: #000000f2;
+  --transparent-blue-10: #0591ff1a;
+  --transparent-gray-6: #0505050f;
+  --transparent-white-25: #ffffff40;
+  --transparent-white-65: #ffffffa6;
+  --transparent-white-85: #ffffffd9;
+  --transparent-yellow-10: #ffd7051a;
+  --yellow-yellow-1: #feffe6;
+  --yellow-yellow-2: #ffffb8;
+  --yellow-yellow-3: #fffb8f;
+  --yellow-yellow-4: #fff566;
+  --yellow-yellow-5: #ffec3d;
+  --yellow-yellow-6: #ffe100;
+}
+
+/* Typhography */
+:root {
+  --largeTitle-size: 34px;
+  --largeTitle-weight: 400;
+  --largeTitle-lh: 1.2;
+
+  --t1r-size: 28px;
+  --t1r-weight: 400;
+  --t1r-lh: 1.2;
+  --t1m-size: 28px;
+  --t1m-weight: 500;
+  --t1m-lh: 1.2;
+
+  --t2r-size: 22px;
+  --t2r-weight: 400;
+  --t2r-lh: 1.2;
+  --t2m-size: 22px;
+  --t2m-weight: 500;
+  --t2m-lh: 1.2;
+
+  --t3r-size: 20px;
+  --t3r-weight: 400;
+  --t3r-lh: 1.2;
+  --t3m-size: 20px;
+  --t3m-weight: 500;
+  --t3m-lh: 1.2;
+  --t3s-size: 20px;
+  --t3s-weight: 600;
+  --t3s-lh: 1.2;
+
+  --headline-size: 17px;
+  --headline-weight: 600;
+  --headline-lh: 1.12;
+
+  --bodyr-size: 17px;
+  --bodyr-weight: 400;
+  --bodyr-lh: 1.2;
+  --bodym-size: 17px;
+  --bodym-weight: 500;
+  --bodym-lh: 1.2;
+
+  --calloutr-size: 16px;
+  --calloutr-weight: 400;
+  --calloutr-lh: 1.2;
+  --calloutsb-size: 16px;
+  --calloutsb-weight: 600;
+  --calloutsb-lh: 1.2;
+
+  --subr-size: 15px;
+  --subr-weight: 400;
+  --subr-lh: 1.25;
+  --subm-size: 15px;
+  --subm-weight: 500;
+  --subm-lh: 1.25;
+  --subsb-size: 15px;
+  --subsb-weight: 600;
+  --subsb-lh: 1.25;
+
+  --footr-size: 13px;
+  --footr-weight: 400;
+  --footr-lh: 1.1;
+  --footm-size: 13px;
+  --footm-weight: 500;
+  --footm-lh: 1.1;
+  --footsb-size: 13px;
+  --footsb-weight: 600;
+  --footsb-lh: 1.1;
+
+  --cap1r-size: 12px;
+  --cap1r-weight: 400;
+  --cap1r-lh: 1.2;
+  --cap1m-size: 12px;
+  --cap1m-weight: 500;
+  --cap1m-lh: 1.2;
+
+  --cap2r-size: 11px;
+  --cap2r-weight: 400;
+  --cap2r-lh: 1.2;
+  --cap2m-size: 11px;
+  --cap2m-weight: 500;
+  --cap2m-lh: 1.2;
+  --cap2sb-size: 11px;
+  --cap2sb-weight: 600;
+  --cap2sb-lh: 1.2;
+
+  --cap3r-size: 10px;
+  --cap3r-weight: 400;
+  --cap3r-lh: 1.2;
+
+  @media (max-width: 1600.98px) {
+    --t1r-size: 22px;
+    --t1m-size: 22px;
+    --t2r-size: 20px;
+    --t2m-size: 20px;
+    --t3r-size: 17px;
+    --t3m-size: 17px;
+
+    --headline-size: 16px;
+
+    --bodyr-size: 16px;
+    --bodym-size: 16px;
+
+    --calloutr-size: 15px;
+    --calloutsb-size: 15px;
+
+    --subr-size: 13px;
+    --subm-size: 13px;
+    --subsb-size: 13px;
+
+    --footr-size: 12px;
+    --footm-size: 12px;
+    --footsb-size: 12px;
+
+    --cap1r-size: 11px;
+    --cap1m-size: 11px;
+    --cap2r-size: 10px;
+    --cap2m-size: 10px;
+    --cap2sb-size: 10px;
+    --cap3r-size: 8px;
+  }
+}
+
+body {
+  background-color: var(--color-white);
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.largeTitle {
+  font-size: var(--largeTitle-size);
+  font-weight: var(--largeTitle-weight);
+  line-height: var(--largeTitle-lh);
+}
+
+.title1-regular {
+  font-size: var(--t1r-size);
+  font-weight: var(--t1r-weight);
+  line-height: var(--t1r-lh);
+}
+
+.title1-medium {
+  font-size: var(--t1m-size);
+  font-weight: var(--t1m-weight);
+  line-height: var(--t1m-lh);
+}
+
+.title2-regular {
+  font-size: var(--t2r-size);
+  font-weight: var(--t2r-weight);
+  line-height: var(--t2r-lh);
+}
+
+.title2-medium {
+  font-size: var(--t2m-size);
+  font-weight: var(--t2m-weight);
+  line-height: var(--t2m-lh);
+}
+
+.title3-regular {
+  font-size: var(--t3r-size);
+  font-weight: var(--t3r-weight);
+  line-height: var(--t3r-lh);
+}
+
+.title3-medium {
+  font-size: var(--t3m-size);
+  font-weight: var(--t3m-weight);
+  line-height: var(--t3m-lh);
+}
+
+.title3-semibold {
+  font-size: var(--t3s-size);
+  font-weight: var(--t3s-weight);
+  line-height: var(--t3s-lh);
+}
+
+.headline {
+  font-size: var(--headline-size);
+  font-weight: var(--headline-weight);
+  line-height: var(--headline-lh);
+}
+
+.headline-semibold {
+  font-size: var(--headline-size);
+  font-weight: var(--headline-weight);
+  line-height: var(--headline-lh);
+}
+
+.body-regular {
+  font-size: var(--bodyr-size);
+  font-weight: var(--bodyr-weight);
+  line-height: var(--bodyr-lh);
+}
+
+.body-medium {
+  font-size: var(--bodym-size);
+  font-weight: var(--bodym-weight);
+  line-height: var(--bodym-lh);
+}
+
+.callout-regular {
+  font-size: var(--calloutr-size);
+  font-weight: var(--calloutr-weight);
+  line-height: var(--calloutr-lh);
+}
+
+.callout-semibold {
+  font-size: var(--calloutsb-size);
+  font-weight: var(--calloutsb-weight);
+  line-height: var(--calloutsb-lh);
+}
+
+.subheadline-regular {
+  font-size: var(--subr-size);
+  font-weight: var(--subr-weight);
+  line-height: var(--subr-lh);
+}
+
+.subheadline-medium {
+  font-size: var(--subm-size);
+  font-weight: var(--subm-weight);
+  line-height: var(--subm-lh);
+}
+
+.subheadline-semibold {
+  font-size: var(--subsb-size);
+  font-weight: var(--subsb-weight);
+  line-height: var(--subsb-lh);
+}
+
+.footnote-regular {
+  font-size: var(--footr-size);
+  font-weight: var(--footr-weight);
+  line-height: var(--footr-lh);
+}
+
+.footnote-medium {
+  font-size: var(--footm-size);
+  font-weight: var(--footm-weight);
+  line-height: var(--footm-lh);
+}
+
+.footnote-semibold {
+  font-size: var(--footsb-size);
+  font-weight: var(--footsb-weight);
+  line-height: var(--footsb-lh);
+}
+
+.caption1-regular {
+  font-size: var(--cap1r-size);
+  font-weight: var(--cap1r-weight);
+  line-height: var(--cap1r-lh);
+}
+
+.caption1-medium {
+  font-size: var(--cap1m-size);
+  font-weight: var(--cap1m-weight);
+  line-height: var(--cap1m-lh);
+}
+
+.caption2-regular {
+  font-size: var(--cap2r-size);
+  font-weight: var(--cap2r-weight);
+  line-height: var(--cap2r-lh);
+}
+
+.caption2-medium {
+  font-size: var(--cap2m-size);
+  font-weight: var(--cap2m-weight);
+  line-height: var(--cap2m-lh);
+}
+
+.caption2-semibold {
+  font-size: var(--cap2sb-size);
+  font-weight: var(--cap2sb-weight);
+  line-height: var(--cap2sb-lh);
+}
+
+.caption3-regular {
+  font-size: var(--cap3r-size);
+  font-weight: var(--cap3r-weight);
+  line-height: var(--cap3r-lh);
+}
+
+#map-container {
+  height: 100%;
+  width: 100%;
+  background-color: lightgrey;
+}
+
+.marker {
+  background-image: url('https://docs.mapbox.com/help/demos/custom-markers-gl-js/mapbox-icon.png');
+  background-size: cover;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+}

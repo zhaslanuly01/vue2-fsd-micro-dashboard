@@ -1,10 +1,7 @@
 <template>
-  <DefaultLayout>
-    <Routing />
-  </DefaultLayout>
+  <Routing />
 </template>
 
 <script setup lang="ts">
-import { DefaultLayout } from '@/app/layouts/default-layout'
 import { Routing } from '@/pages/routing'
 </script>

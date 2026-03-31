@@ -4,7 +4,8 @@ import 'element-ui/lib/theme-chalk/index.css'
 
 import App from './App.vue'
 import { router, store } from './providers'
-import './styles/index.scss'
+import '@/shared/styles/global.css'
+import '@/shared/styles/reset.css'
 import { __serverStartDatabaseMigration } from '@/shared/lib/server'
 
 Vue.use(ElementUI)

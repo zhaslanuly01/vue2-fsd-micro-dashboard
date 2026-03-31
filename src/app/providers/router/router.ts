@@ -12,7 +12,8 @@ const routes: RouteConfig[] = [
     name: 'home',
     component: HomePage,
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      layout: 'default'
     }
   },
   {
@@ -21,7 +22,8 @@ const routes: RouteConfig[] = [
     component: LoginPage,
     meta: {
       requiresAuth: false,
-      guestOnly: true
+      guestOnly: true,
+      layout: 'empty'
     }
   },
   {
