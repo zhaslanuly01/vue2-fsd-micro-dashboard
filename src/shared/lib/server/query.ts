@@ -9,6 +9,8 @@ export interface ListQueryParams {
   productType: string
   type: string
   responsibleUnit: string
+  responsibleTeam: string
+  priority: string
   page: number
   pageSize: number
   sortBy: string
@@ -27,6 +29,8 @@ export function parseListQuery(url: URL): ListQueryParams {
     productType: url.searchParams.get('productType') ?? '',
     type: url.searchParams.get('type') ?? '',
     responsibleUnit: url.searchParams.get('responsibleUnit') ?? '',
+    responsibleTeam: url.searchParams.get('responsibleTeam') ?? '',
+    priority: url.searchParams.get('priority') ?? '',
     page: Number(url.searchParams.get('page') ?? 1),
     pageSize: Number(url.searchParams.get('pageSize') ?? 10),
     sortBy: url.searchParams.get('sortBy') ?? '',

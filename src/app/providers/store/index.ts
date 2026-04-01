@@ -6,6 +6,7 @@ import { storageTankModule } from '@/entities/storage-tank'
 import { equipmentModule } from '@/entities/equipment'
 import { pipelineModule } from '@/entities/pipeline'
 import { ecoStationModule } from '@/entities/eco-station'
+import { maintenanceRequestModule } from '@/entities/maintenance-request'
 
 Vue.use(Vuex)
 
@@ -16,7 +17,8 @@ export const store = new Vuex.Store({
     storageTank: storageTankModule,
     equipment: equipmentModule,
     pipeline: pipelineModule,
-    ecoStation: ecoStationModule
+    ecoStation: ecoStationModule,
+    maintenanceRequest: maintenanceRequestModule
   }
 })
 
