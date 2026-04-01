@@ -1,0 +1,617 @@
+<template>
+  <div class="eco-page">
+    <div class="eco-page__header">
+      <div>
+        <h1 class="eco-page__title">Экологические станции</h1>
+        <p class="eco-page__subtitle">Мониторинг выбросов, газовых показателей и качества воды</p>
+      </div>
+
+      <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
+    </div>
+
+    <EcoStationKpi />
+
+    <div class="eco-page__analytics-grid">
+      <div class="eco-page__analytics-main">
+        <EcoStationMap />
+      </div>
+
+      <div class="eco-page__analytics-side">
+        <EcoStationStatusChart />
+        <EcoStationEmissionChart />
+      </div>
+    </div>
+
+    <el-card shadow="never" class="eco-page__filters">
+      <div class="eco-page__filters-grid">
+        <el-input
+          :value="filters.search"
+          placeholder="Поиск по станции, месторождению, региону..."
+          clearable
+          @input="handleSearchInput"
+        />
+
+        <el-select
+          :value="filters.status"
+          placeholder="Статус"
+          clearable
+          @change="handleStatusChange"
+        >
+          <el-option
+            v-for="status in statuses"
+            :key="status.value"
+            :label="status.label"
+            :value="status.value"
+          />
+        </el-select>
+
+        <el-select
+          :value="filters.region"
+          placeholder="Регион"
+          clearable
+          @change="handleRegionChange"
+        >
+          <el-option v-for="region in regions" :key="region" :label="region" :value="region" />
+        </el-select>
+
+        <el-select
+          :value="filters.fieldName"
+          placeholder="Месторождение"
+          clearable
+          @change="handleFieldChange"
+        >
+          <el-option v-for="field in fieldNames" :key="field" :label="field" :value="field" />
+        </el-select>
+
+        <el-select
+          :value="filters.responsibleUnit"
+          placeholder="Ответственное подразделение"
+          clearable
+          @change="handleResponsibleUnitChange"
+        >
+          <el-option v-for="unit in responsibleUnits" :key="unit" :label="unit" :value="unit" />
+        </el-select>
+      </div>
+    </el-card>
+
+    <el-card shadow="never" class="eco-page__table-card">
+      <div class="eco-page__table-meta">
+        <span>Найдено записей: {{ total }}</span>
+      </div>
+
+      <el-alert
+        v-if="error"
+        :title="error"
+        type="error"
+        :closable="false"
+        class="eco-page__alert"
+      />
+
+      <el-table
+        v-loading="loading"
+        :data="paginatedItems"
+        border
+        stripe
+        class="eco-page__table"
+        :row-class-name="getRowClassName"
+        @row-click="handleRowClick"
+        @sort-change="handleSortChange"
+      >
+        <el-table-column prop="stationName" label="Станция" min-width="190" />
+        <el-table-column prop="fieldName" label="Месторождение" min-width="160" />
+        <el-table-column prop="region" label="Регион" min-width="180" />
+
+        <el-table-column prop="status" label="Статус" min-width="140">
+          <template #default="{ row }">
+            <el-tag :type="getStatusTagType(row.status)" effect="plain">
+              {{ formatStatus(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="measurementDate" label="Дата замера" min-width="140" />
+        <el-table-column prop="emissionLevel" label="Выбросы" min-width="120" sortable="custom" />
+        <el-table-column prop="co2Level" label="CO₂" min-width="100" sortable="custom" />
+        <el-table-column prop="h2sLevel" label="H₂S" min-width="100" sortable="custom" />
+        <el-table-column
+          prop="waterQualityIndex"
+          label="Индекс воды"
+          min-width="150"
+          sortable="custom"
+        >
+          <template #default="{ row }">
+            <div class="eco-page__progress-cell">
+              <el-progress
+                :percentage="row.waterQualityIndex"
+                :stroke-width="12"
+                :status="getWaterQualityStatus(row.waterQualityIndex)"
+              />
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="responsibleUnit" label="Подразделение" min-width="180" />
+
+        <template #empty>
+          <div class="eco-page__empty">
+            <span v-if="loading">Загрузка данных...</span>
+            <span v-else>По текущим фильтрам ничего не найдено</span>
+          </div>
+        </template>
+      </el-table>
+
+      <div class="eco-page__pagination">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="filters.page"
+          :page-size="filters.pageSize"
+          :page-sizes="[5, 10, 15, 20]"
+          :total="total"
+          @current-change="handlePageChange"
+          @size-change="handlePageSizeChange"
+        />
+      </div>
+    </el-card>
+
+    <el-drawer
+      :visible.sync="isDrawerVisible"
+      :with-header="false"
+      size="460px"
+      direction="rtl"
+      :before-close="handleCloseDrawer"
+    >
+      <div v-if="selectedStation" class="eco-drawer">
+        <div class="eco-drawer__hero">
+          <div>
+            <div class="eco-drawer__eyebrow">Экологическая станция</div>
+            <div class="eco-drawer__title">{{ selectedStation.stationName }}</div>
+            <div class="eco-drawer__subtitle">
+              {{ selectedStation.fieldName }} · {{ selectedStation.region }}
+            </div>
+          </div>
+
+          <el-tag :type="getStatusTagType(selectedStation.status)" effect="dark">
+            {{ formatStatus(selectedStation.status) }}
+          </el-tag>
+        </div>
+
+        <div class="eco-drawer__metrics">
+          <el-card shadow="never" class="eco-drawer__metric-card">
+            <div class="eco-drawer__metric-label">Выбросы</div>
+            <div class="eco-drawer__metric-value">{{ selectedStation.emissionLevel }}</div>
+          </el-card>
+
+          <el-card shadow="never" class="eco-drawer__metric-card">
+            <div class="eco-drawer__metric-label">CO₂</div>
+            <div class="eco-drawer__metric-value">{{ selectedStation.co2Level }}</div>
+          </el-card>
+
+          <el-card shadow="never" class="eco-drawer__metric-card">
+            <div class="eco-drawer__metric-label">H₂S</div>
+            <div class="eco-drawer__metric-value">{{ selectedStation.h2sLevel }}</div>
+          </el-card>
+
+          <el-card shadow="never" class="eco-drawer__metric-card">
+            <div class="eco-drawer__metric-label">Индекс воды</div>
+            <div class="eco-drawer__metric-value">{{ selectedStation.waterQualityIndex }}</div>
+          </el-card>
+        </div>
+
+        <el-card shadow="never" class="eco-drawer__water-card">
+          <div class="eco-drawer__section-title">Качество воды</div>
+          <el-progress
+            :percentage="selectedStation.waterQualityIndex"
+            :stroke-width="16"
+            :status="getWaterQualityStatus(selectedStation.waterQualityIndex)"
+          />
+          <div class="eco-drawer__water-hint">
+            Последний замер: {{ selectedStation.measurementDate }}
+          </div>
+        </el-card>
+
+        <el-card shadow="never" class="eco-drawer__details-card">
+          <div class="eco-drawer__section-title">Паспорт станции</div>
+
+          <div class="eco-drawer__details-list">
+            <div class="eco-drawer__details-item">
+              <span>ID</span>
+              <b>{{ selectedStation.id }}</b>
+            </div>
+            <div class="eco-drawer__details-item">
+              <span>Станция</span>
+              <b>{{ selectedStation.stationName }}</b>
+            </div>
+            <div class="eco-drawer__details-item">
+              <span>Месторождение</span>
+              <b>{{ selectedStation.fieldName }}</b>
+            </div>
+            <div class="eco-drawer__details-item">
+              <span>Регион</span>
+              <b>{{ selectedStation.region }}</b>
+            </div>
+            <div class="eco-drawer__details-item">
+              <span>Подразделение</span>
+              <b>{{ selectedStation.responsibleUnit }}</b>
+            </div>
+            <div class="eco-drawer__details-item">
+              <span>Координаты</span>
+              <b>{{ selectedStation.lat }}, {{ selectedStation.lng }}</b>
+            </div>
+          </div>
+        </el-card>
+      </div>
+    </el-drawer>
+  </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue'
+import type {
+  EcoStation,
+  EcoStationFilters,
+  EcoStatus
+} from '@/entities/eco-station/model/eco-station.types'
+import { EcoStationKpi } from '@/widgets/eco-station/eco-station-kpi'
+import { EcoStationMap } from '@/widgets/eco-station/eco-station-map'
+import { EcoStationStatusChart } from '@/widgets/eco-station/eco-station-status-chart'
+import { EcoStationEmissionChart } from '@/widgets/eco-station/eco-station-emission-chart'
+
+export default Vue.extend({
+  name: 'EcoStationPage',
+
+  components: {
+    EcoStationKpi,
+    EcoStationMap,
+    EcoStationStatusChart,
+    EcoStationEmissionChart
+  },
+
+  computed: {
+    loading(): boolean {
+      return this.$store.state.ecoStation.loading
+    },
+
+    error(): string | null {
+      return this.$store.state.ecoStation.error
+    },
+
+    filters(): EcoStationFilters {
+      return this.$store.state.ecoStation.filters
+    },
+
+    selectedStation(): EcoStation | null {
+      return this.$store.state.ecoStation.selectedStation
+    },
+
+    paginatedItems(): EcoStation[] {
+      return this.$store.getters['ecoStation/paginatedItems']
+    },
+
+    total(): number {
+      return this.$store.getters['ecoStation/total']
+    },
+
+    statuses(): Array<{ label: string; value: string }> {
+      return this.$store.getters['ecoStation/statuses']
+    },
+
+    regions(): string[] {
+      return this.$store.getters['ecoStation/regions']
+    },
+
+    fieldNames(): string[] {
+      return this.$store.getters['ecoStation/fieldNames']
+    },
+
+    responsibleUnits(): string[] {
+      return this.$store.getters['ecoStation/responsibleUnits']
+    },
+
+    highlightedStationId(): number | null {
+      return this.$store.state.ecoStation.highlightedStationId
+    },
+
+    isDrawerVisible: {
+      get(): boolean {
+        return Boolean(this.selectedStation)
+      },
+      set(value: boolean) {
+        if (!value) {
+          this.$store.dispatch('ecoStation/closeDetails')
+        }
+      }
+    }
+  },
+
+  methods: {
+    handleSearchInput(value: string) {
+      this.$store.dispatch('ecoStation/updateFilters', { search: value })
+    },
+
+    handleStatusChange(value: string) {
+      this.$store.dispatch('ecoStation/updateFilters', { status: value || '' })
+    },
+
+    handleRegionChange(value: string) {
+      this.$store.dispatch('ecoStation/updateFilters', { region: value || '' })
+    },
+
+    handleFieldChange(value: string) {
+      this.$store.dispatch('ecoStation/updateFilters', { fieldName: value || '' })
+    },
+
+    handleResponsibleUnitChange(value: string) {
+      this.$store.dispatch('ecoStation/updateFilters', { responsibleUnit: value || '' })
+    },
+
+    handlePageChange(page: number) {
+      this.$store.dispatch('ecoStation/changePage', page)
+    },
+
+    handlePageSizeChange(pageSize: number) {
+      this.$store.dispatch('ecoStation/changePageSize', pageSize)
+    },
+
+    handleResetFilters() {
+      this.$store.dispatch('ecoStation/resetFilters')
+    },
+
+    handleRowClick(row: EcoStation) {
+      this.$store.dispatch('ecoStation/selectStation', row)
+    },
+
+    handleCloseDrawer() {
+      this.$store.dispatch('ecoStation/closeDetails')
+    },
+
+    handleSortChange({
+      prop,
+      order
+    }: {
+      column: unknown
+      prop: string
+      order: '' | 'ascending' | 'descending'
+    }) {
+      this.$store.dispatch('ecoStation/changeSorting', {
+        sortBy: prop || '',
+        sortOrder: order || ''
+      })
+    },
+
+    getRowClassName({ row }: { row: EcoStation }) {
+      return this.highlightedStationId === row.id ? 'eco-table__row--highlighted' : ''
+    },
+
+    formatStatus(status: EcoStatus) {
+      const map: Record<EcoStatus, string> = {
+        normal: 'Норма',
+        attention: 'Внимание',
+        critical: 'Критично'
+      }
+
+      return map[status]
+    },
+
+    getStatusTagType(status: EcoStatus) {
+      const map: Record<EcoStatus, string> = {
+        normal: 'success',
+        attention: 'warning',
+        critical: 'danger'
+      }
+
+      return map[status]
+    },
+
+    getWaterQualityStatus(value: number): '' | 'success' | 'warning' | 'exception' {
+      if (value < 50) return 'exception'
+      if (value < 75) return 'warning'
+      return 'success'
+    }
+  },
+
+  mounted() {
+    this.$store.dispatch('ecoStation/fetchEcoStations')
+  }
+})
+</script>
+
+<style scoped>
+.eco-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eco-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eco-page__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--label-primary);
+}
+
+.eco-page__subtitle {
+  margin: 8px 0 0;
+  color: var(--label-secondary);
+}
+
+.eco-page__analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.9fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.eco-page__analytics-main,
+.eco-page__analytics-side {
+  min-width: 0;
+}
+
+.eco-page__analytics-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eco-page__filters,
+.eco-page__table-card {
+  border-radius: 18px;
+}
+
+.eco-page__filters-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.eco-page__table-meta {
+  margin-bottom: 16px;
+  color: var(--label-secondary);
+}
+
+.eco-page__alert {
+  margin-bottom: 16px;
+}
+
+.eco-page__table {
+  width: 100%;
+}
+
+.eco-page__table :deep(.eco-table__row--highlighted > td) {
+  background-color: #ecf5ff !important;
+}
+
+.eco-page__pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.eco-page__empty {
+  padding: 24px 0;
+  color: var(--label-secondary);
+}
+
+.eco-page__progress-cell {
+  min-width: 120px;
+}
+
+.eco-drawer {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f7f8fa;
+  min-height: 100%;
+}
+
+.eco-drawer__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eco-drawer__eyebrow {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--label-secondary);
+  margin-bottom: 6px;
+}
+
+.eco-drawer__title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--label-primary);
+}
+
+.eco-drawer__subtitle {
+  margin-top: 6px;
+  color: var(--label-secondary);
+}
+
+.eco-drawer__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.eco-drawer__metric-card,
+.eco-drawer__water-card,
+.eco-drawer__details-card {
+  border-radius: 16px;
+}
+
+.eco-drawer__metric-label {
+  font-size: 13px;
+  color: var(--label-secondary);
+  margin-bottom: 10px;
+}
+
+.eco-drawer__metric-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.eco-drawer__section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.eco-drawer__water-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--label-secondary);
+}
+
+.eco-drawer__details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eco-drawer__details-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.eco-drawer__details-item:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 1280px) {
+  .eco-page__analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .eco-page__filters-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .eco-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .eco-page__filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .eco-drawer__metrics {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

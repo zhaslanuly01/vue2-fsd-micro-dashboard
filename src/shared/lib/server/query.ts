@@ -8,6 +8,7 @@ export interface ListQueryParams {
   terminalName: string
   productType: string
   type: string
+  responsibleUnit: string
   page: number
   pageSize: number
   sortBy: string
@@ -25,6 +26,7 @@ export function parseListQuery(url: URL): ListQueryParams {
     terminalName: url.searchParams.get('terminalName') ?? '',
     productType: url.searchParams.get('productType') ?? '',
     type: url.searchParams.get('type') ?? '',
+    responsibleUnit: url.searchParams.get('responsibleUnit') ?? '',
     page: Number(url.searchParams.get('page') ?? 1),
     pageSize: Number(url.searchParams.get('pageSize') ?? 10),
     sortBy: url.searchParams.get('sortBy') ?? '',
