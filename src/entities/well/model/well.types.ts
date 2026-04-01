@@ -32,12 +32,21 @@ export interface WellsFilters {
   pageSize: number
 }
 
+export interface WellsKpi {
+  total: number
+  active: number
+  avgOilRate: number
+  avgPressure: number
+}
+
 export interface WellsState {
   items: Well[]
   loading: boolean
   error: string | null
   filters: WellsFilters
   selectedWell: Well | null
+  highlightedWellId: number | null
+  activeChartStatus: WellStatus | ''
 }
 
 export interface ListResponse<T> {

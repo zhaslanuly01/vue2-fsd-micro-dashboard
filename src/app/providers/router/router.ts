@@ -4,6 +4,7 @@ import { store } from '@/app/providers/store'
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
 import { WellPage } from '@/pages/well'
+import { AnalyticsPage } from '@/pages/analytics'
 
 Vue.use(Router)
 
@@ -31,6 +32,11 @@ const routes: RouteConfig[] = [
     path: '/well',
     name: 'well',
     component: WellPage
+  },
+  {
+    path: '/analytics',
+    name: 'analytics',
+    component: AnalyticsPage
   },
   {
     path: '*',

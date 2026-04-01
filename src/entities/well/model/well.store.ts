@@ -1,6 +1,6 @@
 import type { Module } from 'vuex'
 import wellsMock from '@/shared/lib/server/__mocks__/well.json'
-import type { Well, WellsFilters, WellsState } from './well.types'
+import type { Well, WellStatus, WellsFilters, WellsKpi, WellsState } from './well.types'
 
 function applyFilters(items: Well[], filters: WellsFilters): Well[] {
   let result = [...items]
@@ -68,7 +68,9 @@ export const wellModule: Module<WellsState, any> = {
     loading: false,
     error: null,
     filters: initialFilters(),
-    selectedWell: null
+    selectedWell: null,
+    highlightedWellId: null,
+    activeChartStatus: ''
   }),
 
   getters: {
@@ -80,11 +82,11 @@ export const wellModule: Module<WellsState, any> = {
       const start = (state.filters.page - 1) * state.filters.pageSize
       const end = start + state.filters.pageSize
 
-      return getters.filteredItems.slice(start, end)
+      return (getters.filteredItems as Well[]).slice(start, end)
     },
 
     total(state, getters): number {
-      return getters.filteredItems.length
+      return (getters.filteredItems as Well[]).length
     },
 
     regions(state): string[] {
@@ -95,13 +97,57 @@ export const wellModule: Module<WellsState, any> = {
       return [...new Set(state.items.map((item) => item.fieldName))].sort()
     },
 
-    statuses(): Array<{ label: string; value: string }> {
+    statuses(): Array<{ label: string; value: WellStatus }> {
       return [
-        { label: 'Активна', value: 'active' },
-        { label: 'Неактивна', value: 'inactive' },
+        { label: 'Активные', value: 'active' },
+        { label: 'Неактивные', value: 'inactive' },
         { label: 'На обслуживании', value: 'maintenance' },
         { label: 'Консервация', value: 'conservation' }
       ]
+    },
+
+    kpi(state, getters): WellsKpi {
+      const items = getters.filteredItems as Well[]
+      const total = items.length
+
+      return {
+        total,
+        active: items.filter((item) => item.status === 'active').length,
+        avgOilRate: total
+          ? Math.round(items.reduce((sum, item) => sum + item.oilRate, 0) / total)
+          : 0,
+        avgPressure: total
+          ? Math.round(items.reduce((sum, item) => sum + item.pressure, 0) / total)
+          : 0
+      }
+    },
+
+    statusChartData(state, getters): Array<{ label: string; value: number; status: WellStatus }> {
+      const items = getters.filteredItems as Well[]
+
+      const counts: Record<WellStatus, number> = {
+        active: 0,
+        inactive: 0,
+        maintenance: 0,
+        conservation: 0
+      }
+
+      items.forEach((item) => {
+        counts[item.status] += 1
+      })
+
+      return [
+        { label: 'Активные', value: counts.active, status: 'active' },
+        { label: 'Неактивные', value: counts.inactive, status: 'inactive' },
+        { label: 'На обслуживании', value: counts.maintenance, status: 'maintenance' },
+        { label: 'Консервация', value: counts.conservation, status: 'conservation' }
+      ]
+    },
+
+    topOilRateWells(state, getters): Well[] {
+      return [...(getters.filteredItems as Well[])]
+        .sort((a, b) => b.oilRate - a.oilRate)
+        .slice(0, 5)
     }
   },
 
@@ -131,6 +177,14 @@ export const wellModule: Module<WellsState, any> = {
 
     setSelectedWell(state, payload: Well | null) {
       state.selectedWell = payload
+    },
+
+    setHighlightedWellId(state, payload: number | null) {
+      state.highlightedWellId = payload
+    },
+
+    setActiveChartStatus(state, payload: WellStatus | '') {
+      state.activeChartStatus = payload
     }
   },
 
@@ -183,14 +237,28 @@ export const wellModule: Module<WellsState, any> = {
 
     resetFilters({ commit }) {
       commit('resetFilters')
+      commit('setActiveChartStatus', '')
     },
 
     selectWell({ commit }, well: Well) {
       commit('setSelectedWell', well)
+      commit('setHighlightedWellId', well.id)
     },
 
     closeDetails({ commit }) {
       commit('setSelectedWell', null)
+    },
+
+    highlightWell({ commit }, wellId: number | null) {
+      commit('setHighlightedWellId', wellId)
+    },
+
+    drilldownByStatus({ commit }, status: WellStatus | '') {
+      commit('setActiveChartStatus', status)
+      commit('setFilters', {
+        status,
+        page: 1
+      })
     }
   }
 }

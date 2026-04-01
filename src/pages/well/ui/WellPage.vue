@@ -9,6 +9,13 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
+    <WellKpi />
+
+    <div class="well-page__analytics-grid">
+      <WellChart />
+      <WellMap />
+    </div>
+
     <el-card shadow="never" class="well-page__filters">
       <div class="well-page__filters-grid">
         <el-input
@@ -71,6 +78,7 @@
         border
         stripe
         class="well-page__table"
+        :row-class-name="getRowClassName"
         @row-click="handleRowClick"
         @sort-change="handleSortChange"
       >
@@ -124,78 +132,71 @@
       <div v-if="selectedWell" class="well-details">
         <div class="well-details__section">
           <div class="well-details__item">
-            <span class="well-details__label">ID</span>
-            <span>{{ selectedWell.id }}</span>
+            <span class="well-details__label">ID</span><span>{{ selectedWell.id }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Номер</span>
-            <span>{{ selectedWell.wellNumber }}</span>
+            <span class="well-details__label">Номер</span><span>{{ selectedWell.wellNumber }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Название</span>
-            <span>{{ selectedWell.name }}</span>
+            <span class="well-details__label">Название</span><span>{{ selectedWell.name }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Месторождение</span>
-            <span>{{ selectedWell.fieldName }}</span>
+            <span class="well-details__label">Месторождение</span
+            ><span>{{ selectedWell.fieldName }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Регион</span>
-            <span>{{ selectedWell.region }}</span>
+            <span class="well-details__label">Регион</span><span>{{ selectedWell.region }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Статус</span>
-            <span>{{ formatStatus(selectedWell.status) }}</span>
+            <span class="well-details__label">Статус</span
+            ><span>{{ formatStatus(selectedWell.status) }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Дата запуска</span>
-            <span>{{ selectedWell.launchDate }}</span>
+            <span class="well-details__label">Дата запуска</span
+            ><span>{{ selectedWell.launchDate }}</span>
           </div>
         </div>
 
         <div class="well-details__section">
           <div class="well-details__item">
-            <span class="well-details__label">Дебит нефти</span>
-            <span>{{ selectedWell.oilRate }}</span>
+            <span class="well-details__label">Дебит нефти</span
+            ><span>{{ selectedWell.oilRate }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Дебит газа</span>
-            <span>{{ selectedWell.gasRate }}</span>
+            <span class="well-details__label">Дебит газа</span
+            ><span>{{ selectedWell.gasRate }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Обводненность</span>
-            <span>{{ selectedWell.waterCut }}%</span>
+            <span class="well-details__label">Обводненность</span
+            ><span>{{ selectedWell.waterCut }}%</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Глубина</span>
-            <span>{{ selectedWell.depth }} м</span>
+            <span class="well-details__label">Глубина</span><span>{{ selectedWell.depth }} м</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Давление</span>
-            <span>{{ selectedWell.pressure }}</span>
+            <span class="well-details__label">Давление</span
+            ><span>{{ selectedWell.pressure }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Температура</span>
-            <span>{{ selectedWell.temperature }} °C</span>
+            <span class="well-details__label">Температура</span
+            ><span>{{ selectedWell.temperature }} °C</span>
           </div>
         </div>
 
         <div class="well-details__section">
           <div class="well-details__item">
-            <span class="well-details__label">Инженер</span>
-            <span>{{ selectedWell.engineer }}</span>
+            <span class="well-details__label">Инженер</span><span>{{ selectedWell.engineer }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Кластер</span>
-            <span>{{ selectedWell.cluster }}</span>
+            <span class="well-details__label">Кластер</span><span>{{ selectedWell.cluster }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Последняя инспекция</span>
-            <span>{{ selectedWell.lastInspectionDate }}</span>
+            <span class="well-details__label">Последняя инспекция</span
+            ><span>{{ selectedWell.lastInspectionDate }}</span>
           </div>
           <div class="well-details__item">
-            <span class="well-details__label">Координаты</span>
-            <span>{{ selectedWell.lat }}, {{ selectedWell.lng }}</span>
+            <span class="well-details__label">Координаты</span
+            ><span>{{ selectedWell.lat }}, {{ selectedWell.lng }}</span>
           </div>
         </div>
       </div>
@@ -206,9 +207,18 @@
 <script lang="ts">
 import Vue from 'vue'
 import type { Well, WellStatus, WellsFilters } from '@/entities/well/model/well.types'
+import { WellKpi } from '@/widgets/well/well-kpi'
+import { WellChart } from '@/widgets/well/well-chart'
+import { WellMap } from '@/widgets/well/well-map'
 
 export default Vue.extend({
   name: 'WellPage',
+
+  components: {
+    WellKpi,
+    WellChart,
+    WellMap
+  },
 
   computed: {
     loading(): boolean {
@@ -245,6 +255,10 @@ export default Vue.extend({
 
     fieldNames(): string[] {
       return this.$store.getters['well/fieldNames']
+    },
+
+    highlightedWellId(): number | null {
+      return this.$store.state.well.highlightedWellId
     },
 
     isDrawerVisible: {
@@ -310,6 +324,10 @@ export default Vue.extend({
       })
     },
 
+    getRowClassName({ row }: { row: Well }) {
+      return this.highlightedWellId === row.id ? 'well-table__row--highlighted' : ''
+    },
+
     formatStatus(status: WellStatus) {
       const map: Record<WellStatus, string> = {
         active: 'Активна',
@@ -341,7 +359,7 @@ export default Vue.extend({
 
 <style scoped>
 .well-page {
-  padding: 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -366,6 +384,12 @@ export default Vue.extend({
   color: var(--label-secondary);
 }
 
+.well-page__analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .well-page__filters,
 .well-page__table-card {
   border-radius: 16px;
@@ -388,6 +412,10 @@ export default Vue.extend({
 
 .well-page__table {
   width: 100%;
+}
+
+.well-page__table :deep(.well-table__row--highlighted > td) {
+  background-color: #ecf5ff !important;
 }
 
 .well-page__pagination {
@@ -432,6 +460,10 @@ export default Vue.extend({
 }
 
 @media (max-width: 1200px) {
+  .well-page__analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
   .well-page__filters-grid {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
