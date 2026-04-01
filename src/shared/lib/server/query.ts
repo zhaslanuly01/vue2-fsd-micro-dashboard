@@ -5,10 +5,9 @@ export interface ListQueryParams {
   status: string
   region: string
   fieldName: string
-
   terminalName: string
   productType: string
-
+  type: string
   page: number
   pageSize: number
   sortBy: string
@@ -17,19 +16,18 @@ export interface ListQueryParams {
 
 export function parseListQuery(url: URL): ListQueryParams {
   const sortOrderParam = url.searchParams.get('sortOrder')
+
   return {
     search: url.searchParams.get('search') ?? '',
     status: url.searchParams.get('status') ?? '',
     region: url.searchParams.get('region') ?? '',
     fieldName: url.searchParams.get('fieldName') ?? '',
-
     terminalName: url.searchParams.get('terminalName') ?? '',
     productType: url.searchParams.get('productType') ?? '',
-
+    type: url.searchParams.get('type') ?? '',
     page: Number(url.searchParams.get('page') ?? 1),
     pageSize: Number(url.searchParams.get('pageSize') ?? 10),
     sortBy: url.searchParams.get('sortBy') ?? '',
-
     sortOrder: sortOrderParam === 'desc' || sortOrderParam === 'asc' ? sortOrderParam : 'asc'
   }
 }
