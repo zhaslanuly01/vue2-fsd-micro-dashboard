@@ -5,6 +5,7 @@ import { storageTankHandlers } from '@/entities/storage-tank'
 import { equipmentHandlers } from '@/entities/equipment'
 import { pipelineHandlers } from '@/entities/pipeline'
 import { ecoStationHandlers } from '@/entities/eco-station'
+import { oilFieldHandlers } from '@/entities/oil-field'
 
 export const handlers = [
   ...authHandlers,
@@ -13,5 +14,6 @@ export const handlers = [
   ...storageTankHandlers,
   ...equipmentHandlers,
   ...pipelineHandlers,
-  ...ecoStationHandlers
+  ...ecoStationHandlers,
+  ...oilFieldHandlers
 ]

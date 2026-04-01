@@ -11,6 +11,7 @@ export interface ListQueryParams {
   responsibleUnit: string
   responsibleTeam: string
   priority: string
+  contractor: string
   page: number
   pageSize: number
   sortBy: string
@@ -31,6 +32,7 @@ export function parseListQuery(url: URL): ListQueryParams {
     responsibleUnit: url.searchParams.get('responsibleUnit') ?? '',
     responsibleTeam: url.searchParams.get('responsibleTeam') ?? '',
     priority: url.searchParams.get('priority') ?? '',
+    contractor: url.searchParams.get('contractor') ?? '',
     page: Number(url.searchParams.get('page') ?? 1),
     pageSize: Number(url.searchParams.get('pageSize') ?? 10),
     sortBy: url.searchParams.get('sortBy') ?? '',

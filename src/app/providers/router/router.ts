@@ -10,6 +10,7 @@ import { EquipmentPage } from '@/pages/equipment'
 import { PipelinePage } from '@/pages/pipeline'
 import { EcoStationPage } from '@/pages/eco-station'
 import { MaintenanceRequestPage } from '@/pages/maintenance-request'
+import { OilFieldPage } from '@/pages/oil-field'
 
 Vue.use(Router)
 
@@ -67,6 +68,11 @@ const routes: RouteConfig[] = [
     path: '/maintenance-requests',
     name: 'maintenance-requests',
     component: MaintenanceRequestPage
+  },
+  {
+    path: '/oil-field',
+    name: 'oil-field',
+    component: OilFieldPage
   },
   {
     path: '*',
