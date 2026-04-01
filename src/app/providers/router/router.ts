@@ -5,6 +5,7 @@ import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
 import { WellPage } from '@/pages/well'
 import { AnalyticsPage } from '@/pages/analytics'
+import { StorageTankPage } from '@/pages/storage-tank'
 
 Vue.use(Router)
 
@@ -37,6 +38,11 @@ const routes: RouteConfig[] = [
     path: '/analytics',
     name: 'analytics',
     component: AnalyticsPage
+  },
+  {
+    path: '/storage-tank',
+    name: 'storage-tank',
+    component: StorageTankPage
   },
   {
     path: '*',
