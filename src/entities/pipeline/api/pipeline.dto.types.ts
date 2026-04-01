@@ -1,10 +1,8 @@
-export type PipelineStatus = 'operational' | 'inspection' | 'repair' | ' аварийный'
-
-export interface PipelineSection {
+export interface PipelineSectionDto {
   id: number
   sectionName: string
   region: string
-  status: PipelineStatus
+  status: string
   startDate: string
   lengthKm: number
   throughput: number

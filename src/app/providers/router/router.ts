@@ -7,6 +7,7 @@ import { WellPage } from '@/pages/well'
 import { AnalyticsPage } from '@/pages/analytics'
 import { StorageTankPage } from '@/pages/storage-tank'
 import { EquipmentPage } from '@/pages/equipment'
+import { PipelinePage } from '@/pages/pipeline'
 
 Vue.use(Router)
 
@@ -49,6 +50,11 @@ const routes: RouteConfig[] = [
     path: '/equipment',
     name: 'equipment',
     component: EquipmentPage
+  },
+  {
+    path: '/pipeline-section',
+    name: 'pipeline-section',
+    component: PipelinePage
   },
   {
     path: '*',
