@@ -8,6 +8,7 @@
   >
     <el-form-item label="Электронная почта" prop="email">
       <el-input
+        id="email"
         v-model="form.email"
         placeholder="Введите электронную почту"
         autocomplete="username"
@@ -16,6 +17,7 @@
 
     <el-form-item label="Пароль" prop="password">
       <el-input
+        id="password"
         v-model="form.password"
         type="password"
         placeholder="Введите пароль"
@@ -38,7 +40,7 @@
 
     <div class="auth-form__hint">
       <div>Тестовый email: <b>admin@email.com</b></div>
-      <div>Тестовый пароль: <b>123456</b></div>
+      <div>Тестовый пароль: <b>adminadmin</b></div>
     </div>
   </el-form>
 </template>
