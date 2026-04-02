@@ -33,6 +33,13 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+        env:
+          VITE_API_ENDPOINT: ''
+          VITE_API_DELAY: '200'
+          VITE_API_USER_EMAIL: 'admin@email.com'
+          VITE_API_USER_PASSWORD: 'adminadmin'
+          VITE_API_STORAGE_MODE: 'session'
+          VITE_ENABLE_MSW: 'true'
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
