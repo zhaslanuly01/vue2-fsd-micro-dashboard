@@ -102,9 +102,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.matched.some((record) => record.meta?.guestOnly) && isAuthenticated) {
-    next({
-      path: (to.query.redirect as string) || '/'
-    })
+    next({ name: 'well' })
     return
   }
 

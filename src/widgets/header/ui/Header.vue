@@ -34,10 +34,6 @@ const handleCommand = async (command: string) => {
     await store.dispatch('auth/logout')
     router.push('/login')
   }
-
-  if (command === 'profile') {
-    window.location.href = '/profile'
-  }
 }
 </script>
 
