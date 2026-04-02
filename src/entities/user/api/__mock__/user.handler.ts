@@ -3,7 +3,7 @@ import { config } from '@/shared/lib'
 import { __serverDatabase } from '@/shared/lib/server'
 
 export const userHandlers = [
-  http.get(`${config.API_ENDPOINT}/profile`, async ({ request }) => {
+  http.get(`/profile`, async ({ request }) => {
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
 
