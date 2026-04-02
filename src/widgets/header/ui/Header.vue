@@ -20,6 +20,7 @@
 import { computed } from 'vue'
 import { store } from '@/app/providers/store'
 import { getUserFullName, type User } from '@/entities/user'
+import { router } from '@/app/providers/router/router'
 
 const user = computed(() => store.getters['auth/user'] as User | null)
 
@@ -31,7 +32,7 @@ const displayName = computed(() => {
 const handleCommand = async (command: string) => {
   if (command === 'logout') {
     await store.dispatch('auth/logout')
-    window.location.href = import.meta.env.BASE_URL
+    router.push('/login')
   }
 
   if (command === 'profile') {
