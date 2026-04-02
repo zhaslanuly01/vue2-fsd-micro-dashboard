@@ -8,13 +8,21 @@ import '@/shared/styles/reset.css'
 import locale from 'element-ui'
 import App from './App.vue'
 import { router, store } from './providers'
+import { config } from '@/shared/lib'
 
 Vue.use(ElementUI, { locale })
 
 async function enableMocking() {
+  if (!config.ENABLE_MSW) {
+    return
+  }
+
   const { worker } = await import('./providers/mock/browser')
 
   await worker.start({
+    serviceWorker: {
+      url: import.meta.env.BASE_URL + 'mockServiceWorker.js'
+    },
     onUnhandledRequest: 'bypass'
   })
 }

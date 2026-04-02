@@ -31,7 +31,7 @@ const displayName = computed(() => {
 const handleCommand = async (command: string) => {
   if (command === 'logout') {
     await store.dispatch('auth/logout')
-    window.location.href = '/login'
+    window.location.href = import.meta.env.BASE_URL
   }
 
   if (command === 'profile') {

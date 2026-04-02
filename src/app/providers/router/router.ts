@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router, { type RouteConfig } from 'vue-router'
 import { store } from '@/app/providers/store'
-import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
 import { WellPage } from '@/pages/well'
 import { AnalyticsPage } from '@/pages/analytics'
@@ -13,6 +12,11 @@ import { MaintenanceRequestPage } from '@/pages/maintenance-request'
 import { OilFieldPage } from '@/pages/oil-field'
 
 Vue.use(Router)
+
+const authMeta = {
+  requiresAuth: true,
+  layout: 'default'
+}
 
 const routes: RouteConfig[] = [
   {
@@ -26,48 +30,52 @@ const routes: RouteConfig[] = [
     }
   },
   {
+    path: '/',
+    name: 'analytics',
+    component: AnalyticsPage,
+    meta: authMeta
+  },
+  {
     path: '/well',
     name: 'well',
     component: WellPage,
-    meta: {
-      requiresAuth: true,
-      layout: 'default'
-    }
-  },
-  {
-    path: '/',
-    name: 'analytics',
-    component: AnalyticsPage
+    meta: authMeta
   },
   {
     path: '/storage-tank',
     name: 'storage-tank',
-    component: StorageTankPage
+    component: StorageTankPage,
+    meta: authMeta
   },
   {
     path: '/equipment',
     name: 'equipment',
-    component: EquipmentPage
+    component: EquipmentPage,
+    meta: authMeta
   },
   {
     path: '/pipeline-section',
     name: 'pipeline-section',
-    component: PipelinePage
+    component: PipelinePage,
+    meta: authMeta
   },
   {
     path: '/eco-station',
     name: 'eco-station',
-    component: EcoStationPage
+    component: EcoStationPage,
+    meta: authMeta
   },
   {
     path: '/maintenance-requests',
     name: 'maintenance-requests',
-    component: MaintenanceRequestPage
+    component: MaintenanceRequestPage,
+    meta: authMeta
   },
   {
     path: '/oil-field',
     name: 'oil-field',
-    component: OilFieldPage
+    component: OilFieldPage,
+    meta: authMeta
   },
   {
     path: '*',
@@ -94,7 +102,9 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.matched.some((record) => record.meta?.guestOnly) && isAuthenticated) {
-    next({ name: 'home' })
+    next({
+      path: (to.query.redirect as string) || '/'
+    })
     return
   }
 
