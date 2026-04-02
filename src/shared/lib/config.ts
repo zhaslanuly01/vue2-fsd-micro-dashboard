@@ -9,7 +9,7 @@ const getEnvVar = (key: string) => {
 }
 
 const envVariables = z.object({
-  VITE_API_ENDPOINT: z.string().min(1),
+  VITE_API_ENDPOINT: z.string().optional(),
   VITE_API_STORAGE_MODE: z.enum(['session', 'local']).optional(),
   VITE_API_DELAY: z.string().regex(/^\d+$/, { message: 'Must be a positive number' }).optional(),
   VITE_API_USER_EMAIL: z.string().email(),

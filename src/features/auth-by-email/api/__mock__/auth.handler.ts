@@ -2,8 +2,16 @@ import { http, HttpResponse } from 'msw'
 import { config } from '@/shared/lib'
 import { __serverDatabase } from '@/shared/lib/server'
 
+export const withApiBase = (path: string) => {
+  const base = import.meta.env.PROD
+    ? import.meta.env.BASE_URL.replace(/\/+$/, '')
+    : (config.API_ENDPOINT || '').replace(/\/+$/, '')
+
+  return `${base}${path}`
+}
+
 export const authHandlers = [
-  http.post(`${config.API_ENDPOINT}/auth/login`, async ({ request }) => {
+  http.post(withApiBase(`/auth/login`), async ({ request }) => {
     const body = (await request.json()) as {
       email?: string
       password?: string
@@ -30,7 +38,7 @@ export const authHandlers = [
     })
   }),
 
-  http.post(`${config.API_ENDPOINT}/auth/logout`, async () => {
+  http.post(withApiBase(`/auth/logout`), async () => {
     return new HttpResponse(null, { status: 200 })
   })
 ]
