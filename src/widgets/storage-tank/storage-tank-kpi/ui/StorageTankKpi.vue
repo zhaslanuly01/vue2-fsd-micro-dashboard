@@ -2,25 +2,29 @@
   <div class="tank-kpi">
     <el-card shadow="never" class="tank-kpi__card">
       <div class="tank-kpi__label">Всего резервуаров</div>
-      <div class="tank-kpi__value">{{ kpi.total }}</div>
+      <div v-if="loading" class="tank-kpi__skeleton tank-kpi__skeleton--value" />
+      <div v-else class="tank-kpi__value">{{ kpi.total }}</div>
       <div class="tank-kpi__hint">По текущим фильтрам</div>
     </el-card>
 
     <el-card shadow="never" class="tank-kpi__card">
       <div class="tank-kpi__label">Нормальный режим</div>
-      <div class="tank-kpi__value">{{ kpi.normal }}</div>
+      <div v-if="loading" class="tank-kpi__skeleton tank-kpi__skeleton--value" />
+      <div v-else class="tank-kpi__value">{{ kpi.normal }}</div>
       <div class="tank-kpi__hint">Без повышенной нагрузки</div>
     </el-card>
 
     <el-card shadow="never" class="tank-kpi__card">
       <div class="tank-kpi__label">Средняя заполненность</div>
-      <div class="tank-kpi__value">{{ kpi.avgFillPercent }}%</div>
+      <div v-if="loading" class="tank-kpi__skeleton tank-kpi__skeleton--value" />
+      <div v-else class="tank-kpi__value">{{ kpi.avgFillPercent }}%</div>
       <div class="tank-kpi__hint">Средний fillPercent</div>
     </el-card>
 
     <el-card shadow="never" class="tank-kpi__card">
       <div class="tank-kpi__label">Текущий объем</div>
-      <div class="tank-kpi__value">{{ formatNumber(kpi.totalCurrentVolume) }}</div>
+      <div v-if="loading" class="tank-kpi__skeleton tank-kpi__skeleton--value" />
+      <div v-else class="tank-kpi__value">{{ formatNumber(kpi.totalCurrentVolume) }}</div>
       <div class="tank-kpi__hint">Суммарно по резервуарам</div>
     </el-card>
   </div>
@@ -31,6 +35,13 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'StorageTankKpi',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   computed: {
     kpi(): {
@@ -80,6 +91,27 @@ export default Vue.extend({
   margin-top: 8px;
   font-size: 12px;
   color: var(--label-secondary);
+}
+
+.tank-kpi__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: tank-kpi-skeleton-loading 1.4s infinite;
+}
+
+.tank-kpi__skeleton--value {
+  width: 130px;
+  height: 34px;
+}
+
+@keyframes tank-kpi-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1200px) {

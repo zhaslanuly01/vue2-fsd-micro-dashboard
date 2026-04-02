@@ -2,25 +2,29 @@
   <div class="eco-kpi">
     <el-card shadow="never" class="eco-kpi__card">
       <div class="eco-kpi__label">Всего станций</div>
-      <div class="eco-kpi__value">{{ kpi.total }}</div>
+      <div v-if="loading" class="eco-kpi__skeleton eco-kpi__skeleton--value" />
+      <div v-else class="eco-kpi__value">{{ kpi.total }}</div>
       <div class="eco-kpi__hint">По текущим фильтрам</div>
     </el-card>
 
     <el-card shadow="never" class="eco-kpi__card">
       <div class="eco-kpi__label">Нормальный статус</div>
-      <div class="eco-kpi__value">{{ kpi.normal }}</div>
+      <div v-if="loading" class="eco-kpi__skeleton eco-kpi__skeleton--value" />
+      <div v-else class="eco-kpi__value">{{ kpi.normal }}</div>
       <div class="eco-kpi__hint">Без экологических отклонений</div>
     </el-card>
 
     <el-card shadow="never" class="eco-kpi__card">
       <div class="eco-kpi__label">Средний уровень выбросов</div>
-      <div class="eco-kpi__value">{{ kpi.avgEmissionLevel }}</div>
+      <div v-if="loading" class="eco-kpi__skeleton eco-kpi__skeleton--value" />
+      <div v-else class="eco-kpi__value">{{ kpi.avgEmissionLevel }}</div>
       <div class="eco-kpi__hint">Показатель emissionLevel</div>
     </el-card>
 
     <el-card shadow="never" class="eco-kpi__card">
       <div class="eco-kpi__label">Средний индекс воды</div>
-      <div class="eco-kpi__value">{{ kpi.avgWaterQualityIndex }}</div>
+      <div v-if="loading" class="eco-kpi__skeleton eco-kpi__skeleton--value" />
+      <div v-else class="eco-kpi__value">{{ kpi.avgWaterQualityIndex }}</div>
       <div class="eco-kpi__hint">Показатель waterQualityIndex</div>
     </el-card>
   </div>
@@ -31,6 +35,13 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'EcoStationKpi',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   computed: {
     kpi(): {
@@ -73,6 +84,27 @@ export default Vue.extend({
   margin-top: 8px;
   font-size: 12px;
   color: var(--label-secondary);
+}
+
+.eco-kpi__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: eco-kpi-skeleton-loading 1.4s infinite;
+}
+
+.eco-kpi__skeleton--value {
+  width: 130px;
+  height: 34px;
+}
+
+@keyframes eco-kpi-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1200px) {

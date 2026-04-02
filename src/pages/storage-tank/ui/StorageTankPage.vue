@@ -9,20 +9,27 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <StorageTankKpi />
+    <StorageTankKpi :loading="loading" />
 
     <div class="tank-page__overview-grid">
       <div class="tank-page__overview-main">
-        <StorageTankMap />
+        <StorageTankMap :loading="loading" />
       </div>
 
       <div class="tank-page__overview-side">
-        <StorageTankChart />
+        <StorageTankChart :loading="loading" />
 
         <el-card shadow="never" class="tank-page__summary-card">
           <div class="tank-page__summary-title">Операционный срез</div>
 
-          <div class="tank-page__summary-list">
+          <div v-if="loading" class="tank-page__summary-list">
+            <div v-for="n in 5" :key="n" class="tank-page__summary-item">
+              <div class="tank-page__skeleton tank-page__skeleton--label" />
+              <div class="tank-page__skeleton tank-page__skeleton--value" />
+            </div>
+          </div>
+
+          <div v-else class="tank-page__summary-list">
             <div class="tank-page__summary-item">
               <span>Высокая нагрузка</span>
               <b>{{ highLoadCount }}</b>
@@ -745,6 +752,32 @@ export default Vue.extend({
 
   .tank-drawer__metrics {
     grid-template-columns: 1fr;
+  }
+}
+
+.tank-page__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: tank-page-skeleton-loading 1.4s infinite;
+}
+
+.tank-page__skeleton--label {
+  width: 120px;
+  height: 16px;
+}
+
+.tank-page__skeleton--value {
+  width: 70px;
+  height: 18px;
+}
+
+@keyframes tank-page-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

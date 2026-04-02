@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div class="pipeline-chart__body">
+    <div v-if="loading" class="pipeline-chart__skeleton" />
+    <div v-else class="pipeline-chart__body">
       <canvas ref="canvas"></canvas>
     </div>
   </el-card>
@@ -20,6 +21,13 @@ import type { PipelineSection } from '@/entities/pipeline'
 
 export default Vue.extend({
   name: 'PipelineThroughputChart',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -34,7 +42,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.renderChart()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -45,9 +57,26 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.chart) {
+          this.chart.destroy()
+          this.chart = null
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    },
+
     topThroughputSections: {
       handler() {
-        this.renderChart()
+        if (this.loading) return
+        this.$nextTick(() => {
+          this.renderChart()
+        })
       },
       deep: true
     }
@@ -61,6 +90,8 @@ export default Vue.extend({
     },
 
     renderChart() {
+      if (this.loading) return
+
       if (this.chart) {
         this.chart.destroy()
       }
@@ -148,7 +179,24 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.pipeline-chart__body {
+.pipeline-chart__body,
+.pipeline-chart__skeleton {
   height: 340px;
+}
+
+.pipeline-chart__skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: pipeline-chart-skeleton-loading 1.4s infinite;
+}
+
+@keyframes pipeline-chart-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

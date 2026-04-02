@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="tank-map__container"></div>
+    <div v-if="loading" class="tank-map__skeleton" />
+    <div v-else ref="mapRoot" class="tank-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { StorageTank } from '@/entities/storage-tank/model/storage-tank.typ
 
 export default Vue.extend({
   name: 'StorageTankMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+        }
+        this.markersLayer = null
+        this.markersMap.clear()
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedTankId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -133,15 +166,15 @@ export default Vue.extend({
         })
 
         marker.bindPopup(`
-            <div>
-              <b>${tank.tankNumber}</b><br/>
-              ${tank.terminalName}<br/>
-              ${tank.region}<br/>
-              Тип: ${tank.productType}<br/>
-              Заполненность: ${tank.fillPercent}%<br/>
-              Объем: ${tank.currentVolume} / ${tank.capacity}
-            </div>
-          `)
+          <div>
+            <b>${tank.tankNumber}</b><br/>
+            ${tank.terminalName}<br/>
+            ${tank.region}<br/>
+            Тип: ${tank.productType}<br/>
+            Заполненность: ${tank.fillPercent}%<br/>
+            Объем: ${tank.currentVolume} / ${tank.capacity}
+          </div>
+        `)
 
         marker.on('click', () => {
           this.$store.dispatch('storageTank/selectTank', tank)
@@ -192,9 +225,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.tank-map__container {
+.tank-map__container,
+.tank-map__skeleton {
   height: 720px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.tank-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: tank-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes tank-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

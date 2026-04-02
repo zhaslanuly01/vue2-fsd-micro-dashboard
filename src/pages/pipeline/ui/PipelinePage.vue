@@ -11,16 +11,16 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <PipelineKpi />
+    <PipelineKpi :loading="loading" />
 
     <div class="pipeline-page__analytics-grid">
       <div class="pipeline-page__analytics-main">
-        <PipelineMap />
+        <PipelineMap :loading="loading" />
       </div>
 
       <div class="pipeline-page__analytics-side">
-        <PipelineStatusChart />
-        <PipelineThroughputChart />
+        <PipelineStatusChart :loading="loading" />
+        <PipelineThroughputChart :loading="loading" />
       </div>
     </div>
 

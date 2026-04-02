@@ -2,25 +2,29 @@
   <div class="request-kpi">
     <el-card shadow="never" class="request-kpi__card">
       <div class="request-kpi__label">Всего заявок</div>
-      <div class="request-kpi__value">{{ kpi.total }}</div>
+      <div v-if="loading" class="request-kpi__skeleton request-kpi__skeleton--value" />
+      <div v-else class="request-kpi__value">{{ kpi.total }}</div>
       <div class="request-kpi__hint">По текущим фильтрам</div>
     </el-card>
 
     <el-card shadow="never" class="request-kpi__card">
       <div class="request-kpi__label">Новые</div>
-      <div class="request-kpi__value">{{ kpi.newCount }}</div>
+      <div v-if="loading" class="request-kpi__skeleton request-kpi__skeleton--value" />
+      <div v-else class="request-kpi__value">{{ kpi.newCount }}</div>
       <div class="request-kpi__hint">Ожидают старта работ</div>
     </el-card>
 
     <el-card shadow="never" class="request-kpi__card">
       <div class="request-kpi__label">В работе</div>
-      <div class="request-kpi__value">{{ kpi.inProgressCount }}</div>
+      <div v-if="loading" class="request-kpi__skeleton request-kpi__skeleton--value" />
+      <div v-else class="request-kpi__value">{{ kpi.inProgressCount }}</div>
       <div class="request-kpi__hint">Активные заявки</div>
     </el-card>
 
     <el-card shadow="never" class="request-kpi__card">
       <div class="request-kpi__label">Суммарная стоимость</div>
-      <div class="request-kpi__value">{{ formatMoney(kpi.totalCost) }}</div>
+      <div v-if="loading" class="request-kpi__skeleton request-kpi__skeleton--value" />
+      <div v-else class="request-kpi__value">{{ formatMoney(kpi.totalCost) }}</div>
       <div class="request-kpi__hint">По текущей выборке</div>
     </el-card>
   </div>
@@ -31,6 +35,13 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'MaintenanceRequestKpi',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   computed: {
     kpi(): {
@@ -79,6 +90,27 @@ export default Vue.extend({
   margin-top: 8px;
   font-size: 12px;
   color: var(--label-secondary);
+}
+
+.request-kpi__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: request-kpi-skeleton-loading 1.4s infinite;
+}
+
+.request-kpi__skeleton--value {
+  width: 130px;
+  height: 34px;
+}
+
+@keyframes request-kpi-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1200px) {

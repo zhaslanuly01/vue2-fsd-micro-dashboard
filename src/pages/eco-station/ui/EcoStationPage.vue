@@ -9,16 +9,16 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <EcoStationKpi />
+    <EcoStationKpi :loading="loading" />
 
     <div class="eco-page__analytics-grid">
       <div class="eco-page__analytics-main">
-        <EcoStationMap />
+        <EcoStationMap :loading="loading" />
       </div>
 
       <div class="eco-page__analytics-side">
-        <EcoStationStatusChart />
-        <EcoStationEmissionChart />
+        <EcoStationStatusChart :loading="loading" />
+        <EcoStationEmissionChart :loading="loading" />
       </div>
     </div>
 

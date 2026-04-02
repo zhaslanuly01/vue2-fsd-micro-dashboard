@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div class="tank-chart__body">
+    <div v-if="loading" class="tank-chart__skeleton" />
+    <div v-else class="tank-chart__body">
       <canvas ref="canvas"></canvas>
     </div>
   </el-card>
@@ -20,6 +21,13 @@ import type { StorageTank } from '@/entities/storage-tank/model/storage-tank.typ
 
 export default Vue.extend({
   name: 'StorageTankChart',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -34,7 +42,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.renderChart()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -45,9 +57,26 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.chart) {
+          this.chart.destroy()
+          this.chart = null
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    },
+
     topFilledTanks: {
       handler() {
-        this.renderChart()
+        if (this.loading) return
+        this.$nextTick(() => {
+          this.renderChart()
+        })
       },
       deep: true
     }
@@ -61,6 +90,8 @@ export default Vue.extend({
     },
 
     renderChart() {
+      if (this.loading) return
+
       if (this.chart) {
         this.chart.destroy()
       }
@@ -156,7 +187,24 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.tank-chart__body {
+.tank-chart__body,
+.tank-chart__skeleton {
   height: 360px;
+}
+
+.tank-chart__skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: tank-chart-skeleton-loading 1.4s infinite;
+}
+
+@keyframes tank-chart-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

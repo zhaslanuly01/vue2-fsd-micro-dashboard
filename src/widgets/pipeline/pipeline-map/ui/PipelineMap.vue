@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="pipeline-map__container"></div>
+    <div v-if="loading" class="pipeline-map__skeleton" />
+    <div v-else ref="mapRoot" class="pipeline-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { PipelineSection } from '@/entities/pipeline/model/pipeline.types'
 
 export default Vue.extend({
   name: 'PipelineMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+        }
+        this.markersLayer = null
+        this.markersMap.clear()
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedPipelineId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -132,14 +165,14 @@ export default Vue.extend({
         })
 
         marker.bindPopup(`
-            <div>
-              <b>${item.sectionName}</b><br/>
-              ${item.region}<br/>
-              Длина: ${item.lengthKm} км<br/>
-              Давление: ${item.pressure}<br/>
-              Инциденты: ${item.incidentsCount}
-            </div>
-          `)
+          <div>
+            <b>${item.sectionName}</b><br/>
+            ${item.region}<br/>
+            Длина: ${item.lengthKm} км<br/>
+            Давление: ${item.pressure}<br/>
+            Инциденты: ${item.incidentsCount}
+          </div>
+        `)
 
         marker.on('click', () => {
           this.$store.dispatch('pipeline/selectPipeline', item)
@@ -190,9 +223,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.pipeline-map__container {
-  height: 460px;
+.pipeline-map__container,
+.pipeline-map__skeleton {
+  height: 720px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.pipeline-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: pipeline-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes pipeline-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

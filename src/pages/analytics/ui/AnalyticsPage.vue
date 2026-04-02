@@ -5,7 +5,14 @@
       <p>Сводные показатели по всем сущностям</p>
     </div>
 
-    <div class="analytics-page__grid">
+    <div v-if="isLoading" class="analytics-page__grid">
+      <div v-for="n in 7" :key="n" class="chart-skeleton">
+        <div class="chart-skeleton__title" />
+        <div class="chart-skeleton__body" />
+      </div>
+    </div>
+
+    <div v-else class="analytics-page__grid">
       <ChartCard title="Скважины (статусы)">
         <canvas ref="wellsChart"></canvas>
       </ChartCard>
@@ -64,12 +71,13 @@ export default Vue.extend({
 
   data() {
     return {
-      charts: [] as Chart[]
+      charts: [] as Chart[],
+      isLoading: true
     }
   },
 
   mounted() {
-    this.initCharts()
+    this.loadAnalytics()
   },
 
   beforeDestroy() {
@@ -82,7 +90,22 @@ export default Vue.extend({
       this.charts.push(chart)
     },
 
+    loadAnalytics() {
+      this.isLoading = true
+
+      setTimeout(() => {
+        this.isLoading = false
+
+        this.$nextTick(() => {
+          this.initCharts()
+        })
+      }, 1200)
+    },
+
     initCharts() {
+      this.charts.forEach((c) => c.destroy())
+      this.charts = []
+
       this.initWellsChart()
       this.initEquipmentChart()
       this.initRequestsChart()
@@ -318,6 +341,41 @@ export default Vue.extend({
 @media (max-width: 1200px) {
   .analytics-page__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.chart-skeleton {
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+}
+
+.chart-skeleton__title {
+  width: 180px;
+  height: 18px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s infinite;
+}
+
+.chart-skeleton__body {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

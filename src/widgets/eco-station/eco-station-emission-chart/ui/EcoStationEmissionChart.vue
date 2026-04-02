@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div class="eco-emission-chart__body">
+    <div v-if="loading" class="eco-emission-chart__skeleton" />
+    <div v-else class="eco-emission-chart__body">
       <canvas ref="canvas"></canvas>
     </div>
   </el-card>
@@ -20,6 +21,13 @@ import type { EcoStation } from '@/entities/eco-station/model/eco-station.types'
 
 export default Vue.extend({
   name: 'EcoStationEmissionChart',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -34,7 +42,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.renderChart()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -45,9 +57,26 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.chart) {
+          this.chart.destroy()
+          this.chart = null
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    },
+
     topEmissionStations: {
       handler() {
-        this.renderChart()
+        if (this.loading) return
+        this.$nextTick(() => {
+          this.renderChart()
+        })
       },
       deep: true
     }
@@ -61,6 +90,8 @@ export default Vue.extend({
     },
 
     renderChart() {
+      if (this.loading) return
+
       if (this.chart) {
         this.chart.destroy()
       }
@@ -148,7 +179,24 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.eco-emission-chart__body {
+.eco-emission-chart__body,
+.eco-emission-chart__skeleton {
   height: 320px;
+}
+
+.eco-emission-chart__skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: eco-emission-chart-skeleton-loading 1.4s infinite;
+}
+
+@keyframes eco-emission-chart-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

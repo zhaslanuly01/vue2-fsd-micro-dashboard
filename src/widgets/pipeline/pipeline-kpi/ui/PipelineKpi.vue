@@ -2,25 +2,29 @@
   <div class="pipeline-kpi">
     <el-card shadow="never" class="pipeline-kpi__card">
       <div class="pipeline-kpi__label">Всего участков</div>
-      <div class="pipeline-kpi__value">{{ kpi.total }}</div>
+      <div v-if="loading" class="pipeline-kpi__skeleton pipeline-kpi__skeleton--value" />
+      <div v-else class="pipeline-kpi__value">{{ kpi.total }}</div>
       <div class="pipeline-kpi__hint">По текущим фильтрам</div>
     </el-card>
 
     <el-card shadow="never" class="pipeline-kpi__card">
       <div class="pipeline-kpi__label">Работают штатно</div>
-      <div class="pipeline-kpi__value">{{ kpi.operational }}</div>
+      <div v-if="loading" class="pipeline-kpi__skeleton pipeline-kpi__skeleton--value" />
+      <div v-else class="pipeline-kpi__value">{{ kpi.operational }}</div>
       <div class="pipeline-kpi__hint">Статус operational</div>
     </el-card>
 
     <el-card shadow="never" class="pipeline-kpi__card">
       <div class="pipeline-kpi__label">Общая длина</div>
-      <div class="pipeline-kpi__value">{{ kpi.totalLengthKm }} км</div>
+      <div v-if="loading" class="pipeline-kpi__skeleton pipeline-kpi__skeleton--value" />
+      <div v-else class="pipeline-kpi__value">{{ kpi.totalLengthKm }} км</div>
       <div class="pipeline-kpi__hint">Суммарная протяженность</div>
     </el-card>
 
     <el-card shadow="never" class="pipeline-kpi__card">
       <div class="pipeline-kpi__label">Среднее давление</div>
-      <div class="pipeline-kpi__value">{{ kpi.avgPressure }}</div>
+      <div v-if="loading" class="pipeline-kpi__skeleton pipeline-kpi__skeleton--value" />
+      <div v-else class="pipeline-kpi__value">{{ kpi.avgPressure }}</div>
       <div class="pipeline-kpi__hint">Среднее по участкам</div>
     </el-card>
   </div>
@@ -31,6 +35,13 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'PipelineKpi',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   computed: {
     kpi(): {
@@ -73,6 +84,27 @@ export default Vue.extend({
   margin-top: 8px;
   font-size: 12px;
   color: var(--label-secondary);
+}
+
+.pipeline-kpi__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: pipeline-kpi-skeleton-loading 1.4s infinite;
+}
+
+.pipeline-kpi__skeleton--value {
+  width: 130px;
+  height: 34px;
+}
+
+@keyframes pipeline-kpi-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1200px) {

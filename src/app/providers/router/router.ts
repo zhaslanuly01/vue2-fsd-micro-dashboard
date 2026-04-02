@@ -16,15 +16,6 @@ Vue.use(Router)
 
 const routes: RouteConfig[] = [
   {
-    path: '/',
-    name: 'home',
-    component: HomePage,
-    meta: {
-      requiresAuth: true,
-      layout: 'default'
-    }
-  },
-  {
     path: '/login',
     name: 'login',
     component: LoginPage,
@@ -37,10 +28,14 @@ const routes: RouteConfig[] = [
   {
     path: '/well',
     name: 'well',
-    component: WellPage
+    component: WellPage,
+    meta: {
+      requiresAuth: true,
+      layout: 'default'
+    }
   },
   {
-    path: '/analytics',
+    path: '/',
     name: 'analytics',
     component: AnalyticsPage
   },

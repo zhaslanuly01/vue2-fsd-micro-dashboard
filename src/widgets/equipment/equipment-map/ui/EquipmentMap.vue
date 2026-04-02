@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="equipment-map__container"></div>
+    <div v-if="loading" class="equipment-map__skeleton" />
+    <div v-else ref="mapRoot" class="equipment-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { EquipmentUnit } from '@/entities/equipment/model/equipment.types'
 
 export default Vue.extend({
   name: 'EquipmentMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+        }
+        this.markersLayer = null
+        this.markersMap.clear()
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedEquipmentId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -135,14 +168,14 @@ export default Vue.extend({
         })
 
         marker.bindPopup(`
-            <div>
-              <b>${item.name}</b><br/>
-              ${item.fieldName}<br/>
-              Эффективность: ${item.efficiency}%<br/>
-              Температура: ${item.temperature}°C<br/>
-              Давление: ${item.pressure}
-            </div>
-          `)
+          <div>
+            <b>${item.name}</b><br/>
+            ${item.fieldName}<br/>
+            Эффективность: ${item.efficiency}%<br/>
+            Температура: ${item.temperature}°C<br/>
+            Давление: ${item.pressure}
+          </div>
+        `)
 
         marker.on('click', () => {
           this.$store.dispatch('equipment/selectEquipment', item)
@@ -193,9 +226,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.equipment-map__container {
-  height: 420px;
+.equipment-map__container,
+.equipment-map__skeleton {
+  height: 920px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.equipment-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: equipment-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes equipment-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

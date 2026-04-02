@@ -11,16 +11,16 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <MaintenanceRequestKpi />
+    <MaintenanceRequestKpi :loading="loading" />
 
     <div class="request-page__analytics-grid">
       <div class="request-page__analytics-main">
-        <MaintenanceRequestMap />
+        <MaintenanceRequestMap :loading="loading" />
       </div>
 
       <div class="request-page__analytics-side">
-        <MaintenanceRequestStatusChart />
-        <MaintenanceRequestCostChart />
+        <MaintenanceRequestStatusChart :loading="loading" />
+        <MaintenanceRequestCostChart :loading="loading" />
       </div>
     </div>
 

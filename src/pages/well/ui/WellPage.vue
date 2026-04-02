@@ -9,11 +9,11 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <WellKpi />
+    <WellKpi :loading="loading" />
 
     <div class="well-page__analytics-grid">
-      <WellChart />
-      <WellMap />
+      <WellChart :loading="loading" />
+      <WellMap :loading="loading" />
     </div>
 
     <el-card shadow="never" class="well-page__filters">

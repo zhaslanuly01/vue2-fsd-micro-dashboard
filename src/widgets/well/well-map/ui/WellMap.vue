@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="well-map__container"></div>
+    <div v-if="loading" class="well-map__skeleton" />
+    <div v-else ref="mapRoot" class="well-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { Well } from '@/entities/well/model/well.types'
 
 export default Vue.extend({
   name: 'WellMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+          this.markersLayer = null
+          this.markersMap.clear()
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedWellId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -118,10 +151,9 @@ export default Vue.extend({
       if (!this.map || !this.markersLayer) return
 
       this.markersLayer.clearLayers()
+      this.markersMap.clear()
 
-      if (!this.items.length) {
-        return
-      }
+      if (!this.items.length) return
 
       const bounds: Array<[number, number]> = []
 
@@ -132,6 +164,8 @@ export default Vue.extend({
         const marker = L.marker([well.lat, well.lng], {
           icon: this.createMarkerIcon(color, isHighlighted)
         })
+
+        this.markersMap.set(well.id, marker)
 
         marker.bindPopup(`
           <div>
@@ -191,9 +225,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.well-map__container {
+.well-map__container,
+.well-map__skeleton {
   height: 320px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.well-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: well-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes well-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

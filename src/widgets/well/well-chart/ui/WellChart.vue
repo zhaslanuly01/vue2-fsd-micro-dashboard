@@ -6,12 +6,14 @@
         <p class="well-chart__subtitle">Клик по сектору применяет фильтр</p>
       </div>
 
-      <el-button v-if="activeChartStatus" type="text" @click="resetDrilldown">
+      <el-button v-if="!loading && activeChartStatus" type="text" @click="resetDrilldown">
         Сбросить drill-down
       </el-button>
     </div>
 
-    <div class="well-chart__body">
+    <div v-if="loading" class="well-chart__skeleton" />
+
+    <div v-else class="well-chart__body">
       <canvas ref="canvas"></canvas>
     </div>
   </el-card>
@@ -24,6 +26,13 @@ import type { WellStatus } from '@/entities/well/model/well.types'
 
 export default Vue.extend({
   name: 'WellChart',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,7 +51,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.renderChart()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -53,14 +66,35 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.chart) {
+          this.chart.destroy()
+          this.chart = null
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    },
+
     statusChartData: {
       handler() {
-        this.renderChart()
+        if (this.loading) return
+        this.$nextTick(() => {
+          this.renderChart()
+        })
       },
       deep: true
     },
+
     activeChartStatus() {
-      this.renderChart()
+      if (this.loading) return
+      this.$nextTick(() => {
+        this.renderChart()
+      })
     }
   },
 
@@ -70,6 +104,8 @@ export default Vue.extend({
     },
 
     renderChart() {
+      if (this.loading) return
+
       if (this.chart) {
         this.chart.destroy()
       }
@@ -106,14 +142,12 @@ export default Vue.extend({
             if (!activeElements || !activeElements.length) return
 
             const element = activeElements[0] as { _index: number }
-
             const index = element._index
             const selected = this.statusChartData[index]
 
             if (!selected) return
 
             const nextValue = this.activeChartStatus === selected.status ? '' : selected.status
-
             this.$store.dispatch('well/drilldownByStatus', nextValue)
           }
         }
@@ -149,7 +183,24 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.well-chart__body {
+.well-chart__body,
+.well-chart__skeleton {
   height: 320px;
+}
+
+.well-chart__skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: well-chart-skeleton-loading 1.4s infinite;
+}
+
+@keyframes well-chart-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

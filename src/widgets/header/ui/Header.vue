@@ -10,7 +10,6 @@
       </span>
 
       <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item command="profile">Профиль</el-dropdown-item>
         <el-dropdown-item command="logout" divided>Выйти</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>

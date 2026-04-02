@@ -8,32 +8,48 @@
     </div>
 
     <div class="equipment-maintenance__list">
-      <div
-        v-for="item in nearestMaintenanceItems"
-        :key="item.id"
-        class="equipment-maintenance__item"
-        @click="handleSelect(item)"
-      >
-        <div class="equipment-maintenance__left">
-          <div class="equipment-maintenance__name">{{ item.name }}</div>
-          <div class="equipment-maintenance__meta">
-            {{ formatType(item.type) }} · {{ item.fieldName }}
+      <template v-if="loading">
+        <div v-for="n in 6" :key="n" class="equipment-maintenance__item">
+          <div class="equipment-maintenance__left">
+            <div class="equipment-maintenance__skeleton equipment-maintenance__skeleton--name" />
+            <div class="equipment-maintenance__skeleton equipment-maintenance__skeleton--meta" />
+          </div>
+
+          <div class="equipment-maintenance__right">
+            <div class="equipment-maintenance__skeleton equipment-maintenance__skeleton--tag" />
+            <div class="equipment-maintenance__skeleton equipment-maintenance__skeleton--date" />
+          </div>
+        </div>
+      </template>
+
+      <template v-else>
+        <div
+          v-for="item in nearestMaintenanceItems"
+          :key="item.id"
+          class="equipment-maintenance__item"
+          @click="handleSelect(item)"
+        >
+          <div class="equipment-maintenance__left">
+            <div class="equipment-maintenance__name">{{ item.name }}</div>
+            <div class="equipment-maintenance__meta">
+              {{ formatType(item.type) }} · {{ item.fieldName }}
+            </div>
+          </div>
+
+          <div class="equipment-maintenance__right">
+            <el-tag :type="getStatusTagType(item.status)" effect="plain">
+              {{ formatStatus(item.status) }}
+            </el-tag>
+            <div class="equipment-maintenance__date">
+              {{ item.nextMaintenanceDate }}
+            </div>
           </div>
         </div>
 
-        <div class="equipment-maintenance__right">
-          <el-tag :type="getStatusTagType(item.status)" effect="plain">
-            {{ formatStatus(item.status) }}
-          </el-tag>
-          <div class="equipment-maintenance__date">
-            {{ item.nextMaintenanceDate }}
-          </div>
+        <div v-if="!nearestMaintenanceItems.length" class="equipment-maintenance__empty">
+          Нет данных
         </div>
-      </div>
-
-      <div v-if="!nearestMaintenanceItems.length" class="equipment-maintenance__empty">
-        Нет данных
-      </div>
+      </template>
     </div>
   </el-card>
 </template>
@@ -48,6 +64,13 @@ import type {
 
 export default Vue.extend({
   name: 'EquipmentMaintenanceList',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   computed: {
     nearestMaintenanceItems(): EquipmentUnit[] {
@@ -139,7 +162,6 @@ export default Vue.extend({
   padding: 12px;
   border: 1px solid #ebeef5;
   border-radius: 12px;
-  cursor: pointer;
   transition: 0.2s ease;
 }
 
@@ -173,5 +195,41 @@ export default Vue.extend({
 .equipment-maintenance__empty {
   color: var(--label-secondary);
   padding: 24px 0;
+}
+
+.equipment-maintenance__skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: equipment-maintenance-skeleton-loading 1.4s infinite;
+}
+
+.equipment-maintenance__skeleton--name {
+  width: 160px;
+  height: 18px;
+}
+
+.equipment-maintenance__skeleton--meta {
+  width: 130px;
+  height: 14px;
+}
+
+.equipment-maintenance__skeleton--tag {
+  width: 90px;
+  height: 24px;
+}
+
+.equipment-maintenance__skeleton--date {
+  width: 100px;
+  height: 14px;
+}
+
+@keyframes equipment-maintenance-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

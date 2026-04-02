@@ -11,16 +11,16 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <EquipmentKpi />
+    <EquipmentKpi :loading="loading" />
 
     <div class="equipment-page__analytics-grid">
       <div class="equipment-page__analytics-main">
-        <EquipmentMap />
+        <EquipmentMap :loading="loading" />
       </div>
 
       <div class="equipment-page__analytics-side">
-        <EquipmentStatusChart />
-        <EquipmentMaintenanceList />
+        <EquipmentStatusChart :loading="loading" />
+        <EquipmentMaintenanceList :loading="loading" />
       </div>
     </div>
 

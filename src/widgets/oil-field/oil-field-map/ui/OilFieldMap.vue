@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="oil-field-map__container"></div>
+    <div v-if="loading" class="oil-field-map__skeleton" />
+    <div v-else ref="mapRoot" class="oil-field-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { OilField } from '@/entities/oil-field/model/oil-field.types'
 
 export default Vue.extend({
   name: 'OilFieldMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+        }
+        this.markersLayer = null
+        this.markersMap.clear()
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedFieldId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -132,14 +165,14 @@ export default Vue.extend({
         })
 
         marker.bindPopup(`
-            <div>
-              <b>${item.name}</b><br/>
-              ${item.region}<br/>
-              Суточная добыча: ${new Intl.NumberFormat('ru-RU').format(item.dailyProduction)}<br/>
-              Активные скважины: ${item.activeWells}/${item.totalWells}<br/>
-              Подрядчик: ${item.contractor}
-            </div>
-          `)
+          <div>
+            <b>${item.name}</b><br/>
+            ${item.region}<br/>
+            Суточная добыча: ${new Intl.NumberFormat('ru-RU').format(item.dailyProduction)}<br/>
+            Активные скважины: ${item.activeWells}/${item.totalWells}<br/>
+            Подрядчик: ${item.contractor}
+          </div>
+        `)
 
         marker.on('click', () => {
           this.$store.dispatch('oilField/selectField', item)
@@ -190,9 +223,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.oil-field-map__container {
-  height: 460px;
+.oil-field-map__container,
+.oil-field-map__skeleton {
+  height: 720px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.oil-field-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: oil-field-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes oil-field-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

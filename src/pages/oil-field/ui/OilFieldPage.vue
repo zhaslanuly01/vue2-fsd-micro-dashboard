@@ -11,16 +11,16 @@
       <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
     </div>
 
-    <OilFieldKpi />
+    <OilFieldKpi :loading="loading" />
 
     <div class="oil-field-page__analytics-grid">
       <div class="oil-field-page__analytics-main">
-        <OilFieldMap />
+        <OilFieldMap :loading="loading" />
       </div>
 
       <div class="oil-field-page__analytics-side">
-        <OilFieldStatusChart />
-        <OilFieldProductionChart />
+        <OilFieldStatusChart :loading="loading" />
+        <OilFieldProductionChart :loading="loading" />
       </div>
     </div>
 

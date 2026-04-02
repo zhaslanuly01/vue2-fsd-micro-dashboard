@@ -7,7 +7,8 @@
       </div>
     </div>
 
-    <div ref="mapRoot" class="eco-map__container"></div>
+    <div v-if="loading" class="eco-map__skeleton" />
+    <div v-else ref="mapRoot" class="eco-map__container"></div>
   </el-card>
 </template>
 
@@ -22,6 +23,13 @@ import type { EcoStation } from '@/entities/eco-station/model/eco-station.types'
 
 export default Vue.extend({
   name: 'EcoStationMap',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,8 +50,12 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.initMap()
-    this.renderMarkers()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -54,20 +66,41 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.map) {
+          this.map.remove()
+          this.map = null
+        }
+        this.markersLayer = null
+        this.markersMap.clear()
+        return
+      }
+
+      this.$nextTick(() => {
+        this.initMap()
+        this.renderMarkers()
+      })
+    },
+
     items: {
       handler() {
+        if (this.loading) return
         this.renderMarkers()
       },
       deep: true
     },
 
     highlightedStationId() {
+      if (this.loading) return
       this.updateHighlight()
     }
   },
 
   methods: {
     initMap() {
+      if (this.map) return
+
       const root = this.$refs.mapRoot as HTMLDivElement | undefined
       if (!root) return
 
@@ -131,15 +164,15 @@ export default Vue.extend({
         })
 
         marker.bindPopup(`
-            <div>
-              <b>${item.stationName}</b><br/>
-              ${item.fieldName}<br/>
-              ${item.region}<br/>
-              Выбросы: ${item.emissionLevel}<br/>
-              CO₂: ${item.co2Level}<br/>
-              H₂S: ${item.h2sLevel}
-            </div>
-          `)
+          <div>
+            <b>${item.stationName}</b><br/>
+            ${item.fieldName}<br/>
+            ${item.region}<br/>
+            Выбросы: ${item.emissionLevel}<br/>
+            CO₂: ${item.co2Level}<br/>
+            H₂S: ${item.h2sLevel}
+          </div>
+        `)
 
         marker.on('click', () => {
           this.$store.dispatch('ecoStation/selectStation', item)
@@ -190,9 +223,25 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.eco-map__container {
-  height: 460px;
+.eco-map__container,
+.eco-map__skeleton {
+  height: 720px;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.eco-map__skeleton {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: eco-map-skeleton-loading 1.4s infinite;
+}
+
+@keyframes eco-map-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

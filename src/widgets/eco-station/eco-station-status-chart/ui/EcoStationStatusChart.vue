@@ -6,12 +6,13 @@
         <p class="eco-status-chart__subtitle">Клик по сектору применяет фильтр статуса</p>
       </div>
 
-      <el-button v-if="activeChartStatus" type="text" @click="resetDrilldown">
+      <el-button v-if="!loading && activeChartStatus" type="text" @click="resetDrilldown">
         Сбросить drill-down
       </el-button>
     </div>
 
-    <div class="eco-status-chart__body">
+    <div v-if="loading" class="eco-status-chart__skeleton" />
+    <div v-else class="eco-status-chart__body">
       <canvas ref="canvas"></canvas>
     </div>
   </el-card>
@@ -24,6 +25,13 @@ import type { EcoStatus } from '@/entities/eco-station/model/eco-station.types'
 
 export default Vue.extend({
   name: 'EcoStationStatusChart',
+
+  props: {
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
 
   data() {
     return {
@@ -42,7 +50,11 @@ export default Vue.extend({
   },
 
   mounted() {
-    this.renderChart()
+    if (!this.loading) {
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    }
   },
 
   beforeDestroy() {
@@ -53,14 +65,35 @@ export default Vue.extend({
   },
 
   watch: {
+    loading(value: boolean) {
+      if (value) {
+        if (this.chart) {
+          this.chart.destroy()
+          this.chart = null
+        }
+        return
+      }
+
+      this.$nextTick(() => {
+        this.renderChart()
+      })
+    },
+
     statusChartData: {
       handler() {
-        this.renderChart()
+        if (this.loading) return
+        this.$nextTick(() => {
+          this.renderChart()
+        })
       },
       deep: true
     },
+
     activeChartStatus() {
-      this.renderChart()
+      if (this.loading) return
+      this.$nextTick(() => {
+        this.renderChart()
+      })
     }
   },
 
@@ -70,6 +103,8 @@ export default Vue.extend({
     },
 
     renderChart() {
+      if (this.loading) return
+
       if (this.chart) {
         this.chart.destroy()
       }
@@ -111,7 +146,6 @@ export default Vue.extend({
             if (!selected) return
 
             const nextValue = this.activeChartStatus === selected.status ? '' : selected.status
-
             this.$store.dispatch('ecoStation/drilldownByStatus', nextValue)
           }
         }
@@ -147,7 +181,24 @@ export default Vue.extend({
   font-size: 13px;
 }
 
-.eco-status-chart__body {
+.eco-status-chart__body,
+.eco-status-chart__skeleton {
   height: 300px;
+}
+
+.eco-status-chart__skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: eco-status-chart-skeleton-loading 1.4s infinite;
+}
+
+@keyframes eco-status-chart-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

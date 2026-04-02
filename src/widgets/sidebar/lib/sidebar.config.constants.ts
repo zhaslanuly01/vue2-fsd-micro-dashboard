@@ -13,15 +13,9 @@ import wellIcon from '@/shared/assets/icons/well.svg'
 
 export const sidebarConfig: SidebarMenuItem[] = [
   {
-    key: 'home',
-    label: 'Главная',
-    path: '/',
-    svgIcon: homeIcon
-  },
-  {
     key: 'analytics',
     label: 'Аналитика',
-    path: '/analytics',
+    path: '/',
     svgIcon: analyticsIcon
   },
   {
@@ -65,11 +59,5 @@ export const sidebarConfig: SidebarMenuItem[] = [
     label: 'Транспортировка',
     path: '/pipeline-section',
     svgIcon: pipelineSectionIcon
-  },
-  {
-    key: 'settings',
-    label: 'Настройки',
-    path: '/settings',
-    svgIcon: settingsIcon
   }
 ]
