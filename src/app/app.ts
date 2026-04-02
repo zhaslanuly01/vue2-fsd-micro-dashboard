@@ -12,10 +12,6 @@ import { router, store } from './providers'
 Vue.use(ElementUI, { locale })
 
 async function enableMocking() {
-  if (!import.meta.env.DEV) {
-    return
-  }
-
   const { worker } = await import('./providers/mock/browser')
 
   await worker.start({
