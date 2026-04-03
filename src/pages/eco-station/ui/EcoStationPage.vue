@@ -74,84 +74,89 @@
       </div>
     </el-card>
 
-    <el-card shadow="never" class="eco-page__table-card">
-      <div class="eco-page__table-meta">
-        <span>Найдено записей: {{ total }}</span>
+    <el-card
+  shadow="never"
+  class="eco-page__table-card"
+  v-loading="loading"
+>
+  <div class="eco-page__table-meta">
+    <span>Найдено записей: {{ total }}</span>
+  </div>
+
+  <el-alert
+    v-if="error"
+    :title="error"
+    type="error"
+    :closable="false"
+    class="eco-page__alert"
+  />
+
+  <el-table
+    :data="paginatedItems"
+    border
+    stripe
+    class="eco-page__table"
+    :row-class-name="getRowClassName"
+    @row-click="handleRowClick"
+    @sort-change="handleSortChange"
+  >
+    <el-table-column prop="stationName" label="Станция" min-width="190" />
+    <el-table-column prop="fieldName" label="Месторождение" min-width="160" />
+    <el-table-column prop="region" label="Регион" min-width="180" />
+
+    <el-table-column prop="status" label="Статус" min-width="140">
+      <template slot-scope="scope">
+        <el-tag :type="getStatusTagType(scope.row.status)" effect="plain">
+          {{ formatStatus(scope.row.status) }}
+        </el-tag>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="measurementDate" label="Дата замера" min-width="140" />
+    <el-table-column prop="emissionLevel" label="Выбросы" min-width="120" sortable="custom" />
+    <el-table-column prop="co2Level" label="CO₂" min-width="100" sortable="custom" />
+    <el-table-column prop="h2sLevel" label="H₂S" min-width="100" sortable="custom" />
+
+    <el-table-column
+      prop="waterQualityIndex"
+      label="Индекс воды"
+      min-width="150"
+      sortable="custom"
+    >
+      <template slot-scope="scope">
+        <div class="eco-page__progress-cell">
+          <el-progress
+            :percentage="scope.row.waterQualityIndex"
+            :stroke-width="12"
+            :status="getWaterQualityStatus(scope.row.waterQualityIndex)"
+          />
+        </div>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="responsibleUnit" label="Подразделение" min-width="180" />
+
+    <template slot="empty">
+      <div class="eco-page__empty">
+        <span v-if="error">Ошибка загрузки данных</span>
+        <span v-else>По текущим фильтрам ничего не найдено</span>
       </div>
+    </template>
+  </el-table>
 
-      <el-alert
-        v-if="error"
-        :title="error"
-        type="error"
-        :closable="false"
-        class="eco-page__alert"
-      />
-
-      <el-table
-        v-loading="loading"
-        :data="paginatedItems"
-        border
-        stripe
-        class="eco-page__table"
-        :row-class-name="getRowClassName"
-        @row-click="handleRowClick"
-        @sort-change="handleSortChange"
-      >
-        <el-table-column prop="stationName" label="Станция" min-width="190" />
-        <el-table-column prop="fieldName" label="Месторождение" min-width="160" />
-        <el-table-column prop="region" label="Регион" min-width="180" />
-
-        <el-table-column prop="status" label="Статус" min-width="140">
-          <template #default="{ row }">
-            <el-tag :type="getStatusTagType(row.status)" effect="plain">
-              {{ formatStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="measurementDate" label="Дата замера" min-width="140" />
-        <el-table-column prop="emissionLevel" label="Выбросы" min-width="120" sortable="custom" />
-        <el-table-column prop="co2Level" label="CO₂" min-width="100" sortable="custom" />
-        <el-table-column prop="h2sLevel" label="H₂S" min-width="100" sortable="custom" />
-        <el-table-column
-          prop="waterQualityIndex"
-          label="Индекс воды"
-          min-width="150"
-          sortable="custom"
-        >
-          <template #default="{ row }">
-            <div class="eco-page__progress-cell">
-              <el-progress
-                :percentage="row.waterQualityIndex"
-                :stroke-width="12"
-                :status="getWaterQualityStatus(row.waterQualityIndex)"
-              />
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="responsibleUnit" label="Подразделение" min-width="180" />
-
-        <template #empty>
-          <div class="eco-page__empty">
-            <span v-if="loading">Загрузка данных...</span>
-            <span v-else>По текущим фильтрам ничего не найдено</span>
-          </div>
-        </template>
-      </el-table>
-
-      <div class="eco-page__pagination">
-        <el-pagination
-          background
-          layout="total, sizes, prev, pager, next"
-          :current-page="filters.page"
-          :page-size="filters.pageSize"
-          :page-sizes="[5, 10, 15, 20]"
-          :total="total"
-          @current-change="handlePageChange"
-          @size-change="handlePageSizeChange"
-        />
-      </div>
-    </el-card>
+  <div class="eco-page__pagination">
+    <el-pagination
+      background
+      layout="total, sizes, prev, pager, next"
+      :current-page="filters.page"
+      :page-size="filters.pageSize"
+      :page-sizes="[5, 10, 15, 20]"
+      :total="total"
+      @current-change="handlePageChange"
+      @size-change="handlePageSizeChange"
+    />
+  </div>
+</el-card>
 
     <el-drawer
       :visible.sync="isDrawerVisible"
