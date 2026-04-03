@@ -105,9 +105,9 @@
     <el-table-column prop="region" label="Регион" min-width="180" />
 
     <el-table-column prop="status" label="Статус" min-width="140">
-      <template slot-scope="scope">
-        <el-tag :type="getStatusTagType(scope.row.status)" effect="plain">
-          {{ formatStatus(scope.row.status) }}
+      <template slot-scope="{ row }">
+        <el-tag :type="getStatusTagType(row.status)" effect="plain">
+          {{ formatStatus(row.status) }}
         </el-tag>
       </template>
     </el-table-column>
@@ -123,12 +123,12 @@
       min-width="150"
       sortable="custom"
     >
-      <template slot-scope="scope">
+      <template slot-scope="{ row }">
         <div class="eco-page__progress-cell">
           <el-progress
-            :percentage="scope.row.waterQualityIndex"
+            :percentage="row.waterQualityIndex"
             :stroke-width="12"
-            :status="getWaterQualityStatus(scope.row.waterQualityIndex)"
+            :status="getWaterQualityStatus(row.waterQualityIndex)"
           />
         </div>
       </template>
