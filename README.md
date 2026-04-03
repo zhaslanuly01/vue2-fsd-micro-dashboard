@@ -61,69 +61,6 @@ Email: admin@email.com
 Password: adminadmin
 ```
 
-# Micro Dashboard
-
-Демо-проект (test assignment), реализующий микро-дашборд для мониторинга нефтегазовой инфраструктуры.
-
-Проект включает:
-
-- Скважины (Wells)
-- Месторождения (Oil Fields)
-- Оборудование (Equipment)
-- Заявки (Maintenance Requests)
-- Резервуары (Storage Tanks)
-- Экологические станции (Eco Stations)
-- Трубопроводы (Pipelines)
-
-## Стек технологий
-
-- Vue 2.7
-- TypeScript
-- Vuex
-- Vite
-- Element UI
-- Chart.js
-- Leaflet (карты)
-- Vitest (unit / component tests)
-- Cypress (e2e tests)
-
-## Установка
-
-```
-npm install
-```
-
-## Запуск проекта
-
-```
-npm run dev
-```
-
-Приложение будет доступно по адресу:
-
-```
-http://localhost:5173
-```
-
-## Сборка проекта
-
-```
-npm run build
-```
-
-Preview сборки:
-
-```
-npm run preview
-```
-
-## Доступ (Mock Auth)
-
-```
-Email: admin@email.com
-Password: adminadmin
-```
-
 ## Тестирование
 
 Unit + Component тесты (Vitest)
