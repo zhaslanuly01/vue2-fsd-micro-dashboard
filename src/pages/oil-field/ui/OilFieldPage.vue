@@ -1,14 +1,16 @@
 <template>
   <div class="oil-field-page">
     <div class="oil-field-page__header">
-      <div>
+      <div class="oil-field-page__header-text">
         <h1 class="oil-field-page__title">Нефтяные месторождения</h1>
         <p class="oil-field-page__subtitle">
           Контроль добычи, исполнения плана и активности фонда скважин
         </p>
       </div>
 
-      <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
+      <el-button class="oil-field-page__reset-button" @click="handleResetFilters">
+        Сбросить фильтры
+      </el-button>
     </div>
 
     <OilFieldKpi :loading="loading" />
@@ -181,13 +183,14 @@
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
-      size="460px"
+      :size="drawerSize"
       direction="rtl"
       :before-close="handleCloseDrawer"
+      custom-class="oil-field-page__drawer"
     >
       <div v-if="selectedField" class="oil-field-drawer">
-        <div class="oil-field-drawer__hero">
-          <div>
+        <div class="oil-field-drawer__header">
+          <div class="oil-field-drawer__header-text">
             <div class="oil-field-drawer__eyebrow">Нефтяное месторождение</div>
             <div class="oil-field-drawer__title">{{ selectedField.name }}</div>
             <div class="oil-field-drawer__subtitle">
@@ -195,84 +198,102 @@
             </div>
           </div>
 
-          <el-tag :type="getStatusTagType(selectedField.status)" effect="dark">
-            {{ formatStatus(selectedField.status) }}
-          </el-tag>
+          <button
+            type="button"
+            class="oil-field-drawer__close"
+            aria-label="Закрыть"
+            @click="handleCloseDrawer"
+          >
+            ×
+          </button>
         </div>
 
-        <div class="oil-field-drawer__metrics">
-          <el-card shadow="never" class="oil-field-drawer__metric-card">
-            <div class="oil-field-drawer__metric-label">Суточная добыча</div>
-            <div class="oil-field-drawer__metric-value">
-              {{ formatNumber(selectedField.dailyProduction) }}
+        <div class="oil-field-drawer__content">
+          <div class="oil-field-drawer__hero">
+            <el-tag :type="getStatusTagType(selectedField.status)" effect="dark">
+              {{ formatStatus(selectedField.status) }}
+            </el-tag>
+          </div>
+
+          <div class="oil-field-drawer__metrics">
+            <el-card shadow="never" class="oil-field-drawer__metric-card">
+              <div class="oil-field-drawer__metric-label">Суточная добыча</div>
+              <div class="oil-field-drawer__metric-value">
+                {{ formatNumber(selectedField.dailyProduction) }}
+              </div>
+            </el-card>
+
+            <el-card shadow="never" class="oil-field-drawer__metric-card">
+              <div class="oil-field-drawer__metric-label">Месячная добыча</div>
+              <div class="oil-field-drawer__metric-value">
+                {{ formatNumber(selectedField.monthlyProduction) }}
+              </div>
+            </el-card>
+
+            <el-card shadow="never" class="oil-field-drawer__metric-card">
+              <div class="oil-field-drawer__metric-label">Активные скважины</div>
+              <div class="oil-field-drawer__metric-value">
+                {{ selectedField.activeWells }}
+              </div>
+            </el-card>
+
+            <el-card shadow="never" class="oil-field-drawer__metric-card">
+              <div class="oil-field-drawer__metric-label">Всего скважин</div>
+              <div class="oil-field-drawer__metric-value">
+                {{ selectedField.totalWells }}
+              </div>
+            </el-card>
+          </div>
+
+          <el-card shadow="never" class="oil-field-drawer__plan-card">
+            <div class="oil-field-drawer__section-title">Исполнение годового плана</div>
+
+            <div class="oil-field-drawer__plan-progress">
+              <el-progress
+                :percentage="getPlanExecution(selectedField)"
+                :stroke-width="progressStrokeWidth"
+                :show-text="showPlanProgressText"
+                :status="getPlanExecutionStatus(getPlanExecution(selectedField))"
+              />
+            </div>
+
+            <div class="oil-field-drawer__plan-meta">
+              <span>Факт: {{ formatNumber(selectedField.yearlyFact) }}</span>
+              <span>План: {{ formatNumber(selectedField.yearlyPlan) }}</span>
             </div>
           </el-card>
 
-          <el-card shadow="never" class="oil-field-drawer__metric-card">
-            <div class="oil-field-drawer__metric-label">Месячная добыча</div>
-            <div class="oil-field-drawer__metric-value">
-              {{ formatNumber(selectedField.monthlyProduction) }}
-            </div>
-          </el-card>
+          <el-card shadow="never" class="oil-field-drawer__details-card">
+            <div class="oil-field-drawer__section-title">Паспорт месторождения</div>
 
-          <el-card shadow="never" class="oil-field-drawer__metric-card">
-            <div class="oil-field-drawer__metric-label">Активные скважины</div>
-            <div class="oil-field-drawer__metric-value">
-              {{ selectedField.activeWells }}
-            </div>
-          </el-card>
-
-          <el-card shadow="never" class="oil-field-drawer__metric-card">
-            <div class="oil-field-drawer__metric-label">Всего скважин</div>
-            <div class="oil-field-drawer__metric-value">
-              {{ selectedField.totalWells }}
+            <div class="oil-field-drawer__details-list">
+              <div class="oil-field-drawer__details-item">
+                <span>ID</span>
+                <b>{{ selectedField.id }}</b>
+              </div>
+              <div class="oil-field-drawer__details-item">
+                <span>Название</span>
+                <b>{{ selectedField.name }}</b>
+              </div>
+              <div class="oil-field-drawer__details-item">
+                <span>Регион</span>
+                <b>{{ selectedField.region }}</b>
+              </div>
+              <div class="oil-field-drawer__details-item">
+                <span>Дата запуска</span>
+                <b>{{ selectedField.startDate }}</b>
+              </div>
+              <div class="oil-field-drawer__details-item">
+                <span>Подрядчик</span>
+                <b>{{ selectedField.contractor }}</b>
+              </div>
+              <div class="oil-field-drawer__details-item">
+                <span>Координаты</span>
+                <b>{{ selectedField.lat }}, {{ selectedField.lng }}</b>
+              </div>
             </div>
           </el-card>
         </div>
-
-        <el-card shadow="never" class="oil-field-drawer__plan-card">
-          <div class="oil-field-drawer__section-title">Исполнение годового плана</div>
-          <el-progress
-            :percentage="getPlanExecution(selectedField)"
-            :stroke-width="16"
-            :status="getPlanExecutionStatus(getPlanExecution(selectedField))"
-          />
-          <div class="oil-field-drawer__plan-meta">
-            <span>Факт: {{ formatNumber(selectedField.yearlyFact) }}</span>
-            <span>План: {{ formatNumber(selectedField.yearlyPlan) }}</span>
-          </div>
-        </el-card>
-
-        <el-card shadow="never" class="oil-field-drawer__details-card">
-          <div class="oil-field-drawer__section-title">Паспорт месторождения</div>
-
-          <div class="oil-field-drawer__details-list">
-            <div class="oil-field-drawer__details-item">
-              <span>ID</span>
-              <b>{{ selectedField.id }}</b>
-            </div>
-            <div class="oil-field-drawer__details-item">
-              <span>Название</span>
-              <b>{{ selectedField.name }}</b>
-            </div>
-            <div class="oil-field-drawer__details-item">
-              <span>Регион</span>
-              <b>{{ selectedField.region }}</b>
-            </div>
-            <div class="oil-field-drawer__details-item">
-              <span>Дата запуска</span>
-              <b>{{ selectedField.startDate }}</b>
-            </div>
-            <div class="oil-field-drawer__details-item">
-              <span>Подрядчик</span>
-              <b>{{ selectedField.contractor }}</b>
-            </div>
-            <div class="oil-field-drawer__details-item">
-              <span>Координаты</span>
-              <b>{{ selectedField.lat }}, {{ selectedField.lng }}</b>
-            </div>
-          </div>
-        </el-card>
       </div>
     </el-drawer>
   </div>
@@ -298,6 +319,12 @@ export default Vue.extend({
     OilFieldMap,
     OilFieldStatusChart,
     OilFieldProductionChart
+  },
+
+  data() {
+    return {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
   },
 
   computed: {
@@ -341,6 +368,24 @@ export default Vue.extend({
       return this.$store.state.oilField.highlightedFieldId
     },
 
+    isMobile(): boolean {
+      return this.windowWidth <= 575
+    },
+
+    drawerSize(): string {
+      if (this.windowWidth <= 575) return '100%'
+      if (this.windowWidth <= 991) return '72%'
+      return '460px'
+    },
+
+    progressStrokeWidth(): number {
+      return this.isMobile ? 12 : 16
+    },
+
+    showPlanProgressText(): boolean {
+      return !this.isMobile
+    },
+
     isDrawerVisible: {
       get(): boolean {
         return Boolean(this.selectedField)
@@ -354,6 +399,10 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
+
     handleSearchInput(value: string) {
       this.$store.dispatch('oilField/updateFilters', { search: value })
     },
@@ -436,7 +485,6 @@ export default Vue.extend({
 
     getPlanExecution(row: OilField): number {
       if (!row.yearlyPlan) return 0
-
       return Math.min(100, Math.round((row.yearlyFact / row.yearlyPlan) * 100))
     },
 
@@ -449,6 +497,11 @@ export default Vue.extend({
 
   mounted() {
     this.$store.dispatch('oilField/fetchOilFields')
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   }
 })
 </script>
@@ -458,6 +511,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .oil-field-page__header {
@@ -467,21 +521,32 @@ export default Vue.extend({
   gap: 16px;
 }
 
+.oil-field-page__header-text {
+  min-width: 0;
+}
+
 .oil-field-page__title {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .oil-field-page__subtitle {
   margin: 8px 0 0;
   color: var(--label-secondary);
+  word-break: break-word;
+}
+
+.oil-field-page__reset-button {
+  flex-shrink: 0;
 }
 
 .oil-field-page__analytics-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.9fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
   gap: 16px;
   align-items: stretch;
 }
@@ -511,6 +576,7 @@ export default Vue.extend({
 .oil-field-page__table-meta {
   margin-bottom: 16px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .oil-field-page__alert {
@@ -531,6 +597,13 @@ export default Vue.extend({
   margin-top: 16px;
 }
 
+.oil-field-page__pagination :deep(.el-pagination) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .oil-field-page__empty {
   padding: 24px 0;
   color: var(--label-secondary);
@@ -541,18 +614,50 @@ export default Vue.extend({
 }
 
 .oil-field-drawer {
+  min-height: 100%;
+  background: #f7f8fa;
+}
+
+.oil-field-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
   padding: 20px;
+  border-bottom: 1px solid var(--neutral-gray-4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.oil-field-drawer__header-text {
+  min-width: 0;
+}
+
+.oil-field-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.oil-field-drawer__content {
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #f7f8fa;
-  min-height: 100%;
 }
 
 .oil-field-drawer__hero {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -568,23 +673,27 @@ export default Vue.extend({
   font-weight: 700;
   line-height: 1.1;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .oil-field-drawer__subtitle {
   margin-top: 6px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .oil-field-drawer__metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  min-width: 0;
 }
 
 .oil-field-drawer__metric-card,
 .oil-field-drawer__plan-card,
 .oil-field-drawer__details-card {
   border-radius: 16px;
+  min-width: 0;
 }
 
 .oil-field-drawer__metric-label {
@@ -596,12 +705,24 @@ export default Vue.extend({
 .oil-field-drawer__metric-value {
   font-size: 20px;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .oil-field-drawer__section-title {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.oil-field-drawer__plan-progress {
+  width: 100%;
+  min-width: 0;
+}
+
+.oil-field-drawer__plan-progress :deep(.el-progress) {
+  width: 100%;
 }
 
 .oil-field-drawer__plan-meta {
@@ -611,6 +732,7 @@ export default Vue.extend({
   gap: 16px;
   color: var(--label-secondary);
   font-size: 12px;
+  flex-wrap: wrap;
 }
 
 .oil-field-drawer__details-list {
@@ -631,6 +753,28 @@ export default Vue.extend({
   border-bottom: none;
 }
 
+.oil-field-drawer__details-item span,
+.oil-field-drawer__details-item b {
+  word-break: break-word;
+}
+
+:deep(.oil-field-page__drawer) {
+  max-width: 100%;
+}
+
+:deep(.oil-field-page__drawer .el-drawer) {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden;
+}
+
+:deep(.oil-field-page__drawer .el-drawer__body) {
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 1280px) {
   .oil-field-page__analytics-grid {
     grid-template-columns: 1fr;
@@ -641,10 +785,36 @@ export default Vue.extend({
   }
 }
 
+@media (max-width: 991px) {
+  .oil-field-page__title {
+    font-size: 24px;
+  }
+
+  .oil-field-page__pagination {
+    justify-content: flex-start;
+  }
+
+  .oil-field-page__pagination :deep(.el-pagination) {
+    justify-content: flex-start;
+  }
+
+  .oil-field-drawer__header {
+    padding: 16px;
+  }
+
+  .oil-field-drawer__content {
+    padding: 12px 16px 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .oil-field-page__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .oil-field-page__reset-button {
+    width: 100%;
   }
 
   .oil-field-page__filters-grid {
@@ -653,6 +823,80 @@ export default Vue.extend({
 
   .oil-field-drawer__metrics {
     grid-template-columns: 1fr;
+  }
+
+  .oil-field-drawer__plan-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 575px) {
+  .oil-field-page__title {
+    font-size: 22px;
+  }
+
+  .oil-field-page__subtitle {
+    font-size: 14px;
+  }
+
+  .oil-field-page__filters,
+  .oil-field-page__table-card {
+    border-radius: 14px;
+  }
+
+  .oil-field-page__table-meta {
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .oil-field-page__progress-cell {
+    min-width: 100px;
+  }
+
+  .oil-field-drawer__header {
+    padding: 12px;
+  }
+
+  .oil-field-drawer__content {
+    padding: 12px 12px 20px;
+    gap: 12px;
+  }
+
+  .oil-field-drawer__title {
+    font-size: 22px;
+  }
+
+  .oil-field-drawer__subtitle {
+    font-size: 13px;
+  }
+
+  .oil-field-drawer__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 22px;
+  }
+
+  .oil-field-drawer__metric-card,
+  .oil-field-drawer__plan-card,
+  .oil-field-drawer__details-card {
+    border-radius: 12px;
+  }
+
+  .oil-field-drawer__metric-value {
+    font-size: 18px;
+  }
+
+  .oil-field-drawer__section-title {
+    font-size: 14px;
+  }
+
+  .oil-field-drawer__details-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 </style>

@@ -1,12 +1,14 @@
 <template>
   <div class="eco-page">
     <div class="eco-page__header">
-      <div>
+      <div class="eco-page__header-text">
         <h1 class="eco-page__title">Экологические станции</h1>
         <p class="eco-page__subtitle">Мониторинг выбросов, газовых показателей и качества воды</p>
       </div>
 
-      <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
+      <el-button class="eco-page__reset-button" @click="handleResetFilters">
+        Сбросить фильтры
+      </el-button>
     </div>
 
     <EcoStationKpi :loading="loading" />
@@ -78,20 +80,13 @@
 
     <el-skeleton v-if="loading" :rows="6" animated />
 
-    <el-card shadow="never" class="eco-page__table-card">
+    <el-card v-else shadow="never" class="eco-page__table-card">
       <div class="eco-page__table-meta">
         <span>Найдено записей: {{ total }}</span>
       </div>
 
-      <el-alert
-        v-if="error"
-        :title="error"
-        type="error"
-        :closable="false"
-        class="eco-page__alert"
-      />
-
       <el-table
+        ref="ecoTable"
         v-loading="loading"
         :data="paginatedItems"
         border
@@ -160,13 +155,14 @@
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
-      size="460px"
+      :size="drawerSize"
       direction="rtl"
       :before-close="handleCloseDrawer"
+      custom-class="eco-page__drawer"
     >
       <div v-if="selectedStation" class="eco-drawer">
-        <div class="eco-drawer__hero">
-          <div>
+        <div class="eco-drawer__header">
+          <div class="eco-drawer__header-text">
             <div class="eco-drawer__eyebrow">Экологическая станция</div>
             <div class="eco-drawer__title">{{ selectedStation.stationName }}</div>
             <div class="eco-drawer__subtitle">
@@ -174,75 +170,93 @@
             </div>
           </div>
 
-          <el-tag :type="getStatusTagType(selectedStation.status)" effect="dark">
-            {{ formatStatus(selectedStation.status) }}
-          </el-tag>
+          <button
+            type="button"
+            class="eco-drawer__close"
+            aria-label="Закрыть"
+            @click="handleCloseDrawer"
+          >
+            ×
+          </button>
         </div>
 
-        <div class="eco-drawer__metrics">
-          <el-card shadow="never" class="eco-drawer__metric-card">
-            <div class="eco-drawer__metric-label">Выбросы</div>
-            <div class="eco-drawer__metric-value">{{ selectedStation.emissionLevel }}</div>
+        <div class="eco-drawer__content">
+          <div class="eco-drawer__hero">
+            <el-tag :type="getStatusTagType(selectedStation.status)" effect="dark">
+              {{ formatStatus(selectedStation.status) }}
+            </el-tag>
+          </div>
+
+          <div class="eco-drawer__metrics">
+            <el-card shadow="never" class="eco-drawer__metric-card">
+              <div class="eco-drawer__metric-label">Выбросы</div>
+              <div class="eco-drawer__metric-value">{{ selectedStation.emissionLevel }}</div>
+            </el-card>
+
+            <el-card shadow="never" class="eco-drawer__metric-card">
+              <div class="eco-drawer__metric-label">CO₂</div>
+              <div class="eco-drawer__metric-value">{{ selectedStation.co2Level }}</div>
+            </el-card>
+
+            <el-card shadow="never" class="eco-drawer__metric-card">
+              <div class="eco-drawer__metric-label">H₂S</div>
+              <div class="eco-drawer__metric-value">{{ selectedStation.h2sLevel }}</div>
+            </el-card>
+
+            <el-card shadow="never" class="eco-drawer__metric-card">
+              <div class="eco-drawer__metric-label">Индекс воды</div>
+              <div class="eco-drawer__metric-value">{{ selectedStation.waterQualityIndex }}</div>
+            </el-card>
+          </div>
+
+          <el-card shadow="never" class="eco-drawer__water-card">
+            <div class="eco-drawer__section-title">Качество воды</div>
+
+            <div class="eco-drawer__water-progress">
+              <el-progress
+                :percentage="selectedStation.waterQualityIndex"
+                :stroke-width="progressStrokeWidth"
+                :show-text="showWaterProgressText"
+                :status="getWaterQualityStatus(selectedStation.waterQualityIndex)"
+              />
+            </div>
+
+            <div class="eco-drawer__water-hint">
+              Последний замер: {{ selectedStation.measurementDate }}
+            </div>
           </el-card>
 
-          <el-card shadow="never" class="eco-drawer__metric-card">
-            <div class="eco-drawer__metric-label">CO₂</div>
-            <div class="eco-drawer__metric-value">{{ selectedStation.co2Level }}</div>
-          </el-card>
+          <el-card shadow="never" class="eco-drawer__details-card">
+            <div class="eco-drawer__section-title">Паспорт станции</div>
 
-          <el-card shadow="never" class="eco-drawer__metric-card">
-            <div class="eco-drawer__metric-label">H₂S</div>
-            <div class="eco-drawer__metric-value">{{ selectedStation.h2sLevel }}</div>
-          </el-card>
-
-          <el-card shadow="never" class="eco-drawer__metric-card">
-            <div class="eco-drawer__metric-label">Индекс воды</div>
-            <div class="eco-drawer__metric-value">{{ selectedStation.waterQualityIndex }}</div>
+            <div class="eco-drawer__details-list">
+              <div class="eco-drawer__details-item">
+                <span>ID</span>
+                <b>{{ selectedStation.id }}</b>
+              </div>
+              <div class="eco-drawer__details-item">
+                <span>Станция</span>
+                <b>{{ selectedStation.stationName }}</b>
+              </div>
+              <div class="eco-drawer__details-item">
+                <span>Месторождение</span>
+                <b>{{ selectedStation.fieldName }}</b>
+              </div>
+              <div class="eco-drawer__details-item">
+                <span>Регион</span>
+                <b>{{ selectedStation.region }}</b>
+              </div>
+              <div class="eco-drawer__details-item">
+                <span>Подразделение</span>
+                <b>{{ selectedStation.responsibleUnit }}</b>
+              </div>
+              <div class="eco-drawer__details-item">
+                <span>Координаты</span>
+                <b>{{ selectedStation.lat }}, {{ selectedStation.lng }}</b>
+              </div>
+            </div>
           </el-card>
         </div>
-
-        <el-card shadow="never" class="eco-drawer__water-card">
-          <div class="eco-drawer__section-title">Качество воды</div>
-          <el-progress
-            :percentage="selectedStation.waterQualityIndex"
-            :stroke-width="16"
-            :status="getWaterQualityStatus(selectedStation.waterQualityIndex)"
-          />
-          <div class="eco-drawer__water-hint">
-            Последний замер: {{ selectedStation.measurementDate }}
-          </div>
-        </el-card>
-
-        <el-card shadow="never" class="eco-drawer__details-card">
-          <div class="eco-drawer__section-title">Паспорт станции</div>
-
-          <div class="eco-drawer__details-list">
-            <div class="eco-drawer__details-item">
-              <span>ID</span>
-              <b>{{ selectedStation.id }}</b>
-            </div>
-            <div class="eco-drawer__details-item">
-              <span>Станция</span>
-              <b>{{ selectedStation.stationName }}</b>
-            </div>
-            <div class="eco-drawer__details-item">
-              <span>Месторождение</span>
-              <b>{{ selectedStation.fieldName }}</b>
-            </div>
-            <div class="eco-drawer__details-item">
-              <span>Регион</span>
-              <b>{{ selectedStation.region }}</b>
-            </div>
-            <div class="eco-drawer__details-item">
-              <span>Подразделение</span>
-              <b>{{ selectedStation.responsibleUnit }}</b>
-            </div>
-            <div class="eco-drawer__details-item">
-              <span>Координаты</span>
-              <b>{{ selectedStation.lat }}, {{ selectedStation.lng }}</b>
-            </div>
-          </div>
-        </el-card>
       </div>
     </el-drawer>
   </div>
@@ -270,6 +284,12 @@ export default Vue.extend({
     EcoStationEmissionChart
   },
 
+  data() {
+    return {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
+  },
+
   computed: {
     loading(): boolean {
       return this.$store.state.ecoStation.loading
@@ -290,10 +310,7 @@ export default Vue.extend({
     paginatedItems(): EcoStation[] {
       return this.$store.getters['ecoStation/paginatedItems']
     },
-    tableItems(): EcoStation[] {
-      const items = this.$store.getters['ecoStation/paginatedItems']
-      return Array.isArray(items) ? items.slice() : []
-    },
+
     total(): number {
       return this.$store.getters['ecoStation/total']
     },
@@ -318,6 +335,24 @@ export default Vue.extend({
       return this.$store.state.ecoStation.highlightedStationId
     },
 
+    isMobile(): boolean {
+      return this.windowWidth <= 575
+    },
+
+    drawerSize(): string {
+      if (this.windowWidth <= 575) return '100%'
+      if (this.windowWidth <= 991) return '72%'
+      return '460px'
+    },
+
+    progressStrokeWidth(): number {
+      return this.isMobile ? 12 : 16
+    },
+
+    showWaterProgressText(): boolean {
+      return !this.isMobile
+    },
+
     isDrawerVisible: {
       get(): boolean {
         return Boolean(this.selectedStation)
@@ -331,6 +366,10 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
+
     handleSearchInput(value: string) {
       this.$store.dispatch('ecoStation/updateFilters', { search: value })
     },
@@ -423,6 +462,12 @@ export default Vue.extend({
         table?.doLayout?.()
       })
     })
+
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   }
 })
 </script>
@@ -432,6 +477,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .eco-page__header {
@@ -441,16 +487,27 @@ export default Vue.extend({
   gap: 16px;
 }
 
+.eco-page__header-text {
+  min-width: 0;
+}
+
 .eco-page__title {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .eco-page__subtitle {
   margin: 8px 0 0;
   color: var(--label-secondary);
+  word-break: break-word;
+}
+
+.eco-page__reset-button {
+  flex-shrink: 0;
 }
 
 .eco-page__analytics-grid {
@@ -485,6 +542,7 @@ export default Vue.extend({
 .eco-page__table-meta {
   margin-bottom: 16px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .eco-page__alert {
@@ -505,6 +563,13 @@ export default Vue.extend({
   margin-top: 16px;
 }
 
+.eco-page__pagination :deep(.el-pagination) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .eco-page__empty {
   padding: 24px 0;
   color: var(--label-secondary);
@@ -515,18 +580,50 @@ export default Vue.extend({
 }
 
 .eco-drawer {
+  min-height: 100%;
+  background: #f7f8fa;
+}
+
+.eco-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
   padding: 20px;
+  border-bottom: 1px solid var(--neutral-gray-4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eco-drawer__header-text {
+  min-width: 0;
+}
+
+.eco-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.eco-drawer__content {
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #f7f8fa;
-  min-height: 100%;
 }
 
 .eco-drawer__hero {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -542,23 +639,27 @@ export default Vue.extend({
   font-weight: 700;
   line-height: 1.1;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .eco-drawer__subtitle {
   margin-top: 6px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .eco-drawer__metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  min-width: 0;
 }
 
 .eco-drawer__metric-card,
 .eco-drawer__water-card,
 .eco-drawer__details-card {
   border-radius: 16px;
+  min-width: 0;
 }
 
 .eco-drawer__metric-label {
@@ -570,18 +671,31 @@ export default Vue.extend({
 .eco-drawer__metric-value {
   font-size: 22px;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .eco-drawer__section-title {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.eco-drawer__water-progress {
+  width: 100%;
+  min-width: 0;
+}
+
+.eco-drawer__water-progress :deep(.el-progress) {
+  width: 100%;
 }
 
 .eco-drawer__water-hint {
   margin-top: 10px;
   font-size: 13px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .eco-drawer__details-list {
@@ -602,6 +716,28 @@ export default Vue.extend({
   border-bottom: none;
 }
 
+.eco-drawer__details-item span,
+.eco-drawer__details-item b {
+  word-break: break-word;
+}
+
+:deep(.eco-page__drawer) {
+  max-width: 100%;
+}
+
+:deep(.eco-page__drawer .el-drawer) {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden;
+}
+
+:deep(.eco-page__drawer .el-drawer__body) {
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 1280px) {
   .eco-page__analytics-grid {
     grid-template-columns: 1fr;
@@ -612,10 +748,36 @@ export default Vue.extend({
   }
 }
 
+@media (max-width: 991px) {
+  .eco-page__title {
+    font-size: 24px;
+  }
+
+  .eco-page__pagination {
+    justify-content: flex-start;
+  }
+
+  .eco-page__pagination :deep(.el-pagination) {
+    justify-content: flex-start;
+  }
+
+  .eco-drawer__header {
+    padding: 16px;
+  }
+
+  .eco-drawer__content {
+    padding: 12px 16px 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .eco-page__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .eco-page__reset-button {
+    width: 100%;
   }
 
   .eco-page__filters-grid {
@@ -624,6 +786,74 @@ export default Vue.extend({
 
   .eco-drawer__metrics {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .eco-page__title {
+    font-size: 22px;
+  }
+
+  .eco-page__subtitle {
+    font-size: 14px;
+  }
+
+  .eco-page__filters,
+  .eco-page__table-card {
+    border-radius: 14px;
+  }
+
+  .eco-page__table-meta {
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .eco-page__progress-cell {
+    min-width: 100px;
+  }
+
+  .eco-drawer__header {
+    padding: 12px;
+  }
+
+  .eco-drawer__content {
+    padding: 12px 12px 20px;
+    gap: 12px;
+  }
+
+  .eco-drawer__title {
+    font-size: 22px;
+  }
+
+  .eco-drawer__subtitle {
+    font-size: 13px;
+  }
+
+  .eco-drawer__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 22px;
+  }
+
+  .eco-drawer__metric-card,
+  .eco-drawer__water-card,
+  .eco-drawer__details-card {
+    border-radius: 12px;
+  }
+
+  .eco-drawer__metric-value {
+    font-size: 18px;
+  }
+
+  .eco-drawer__section-title {
+    font-size: 14px;
+  }
+
+  .eco-drawer__details-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 </style>

@@ -124,79 +124,104 @@
 
     <el-drawer
       :visible.sync="isDrawerVisible"
-      title="Детали скважины"
-      size="420px"
+      :size="drawerSize"
       direction="rtl"
+      :with-header="false"
       :before-close="handleCloseDrawer"
+      custom-class="well-page__drawer"
     >
-      <div v-if="selectedWell" class="well-details">
-        <div class="well-details__section">
-          <div class="well-details__item">
-            <span class="well-details__label">ID</span><span>{{ selectedWell.id }}</span>
+      <div class="well-drawer">
+        <div class="well-drawer__header">
+          <div class="well-drawer__header-content">
+            <h3 class="well-drawer__title">Детали скважины</h3>
+            <p v-if="selectedWell" class="well-drawer__subtitle">
+              {{ selectedWell.name }} · {{ selectedWell.wellNumber }}
+            </p>
           </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Номер</span><span>{{ selectedWell.wellNumber }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Название</span><span>{{ selectedWell.name }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Месторождение</span
-            ><span>{{ selectedWell.fieldName }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Регион</span><span>{{ selectedWell.region }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Статус</span
-            ><span>{{ formatStatus(selectedWell.status) }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Дата запуска</span
-            ><span>{{ selectedWell.launchDate }}</span>
-          </div>
+
+          <button
+            type="button"
+            class="well-drawer__close"
+            aria-label="Закрыть"
+            @click="handleCloseDrawer"
+          >
+            ×
+          </button>
         </div>
 
-        <div class="well-details__section">
-          <div class="well-details__item">
-            <span class="well-details__label">Дебит нефти</span
-            ><span>{{ selectedWell.oilRate }}</span>
+        <div v-if="selectedWell" class="well-details">
+          <div class="well-details__section">
+            <div class="well-details__item">
+              <span class="well-details__label">ID</span><span>{{ selectedWell.id }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Номер</span
+              ><span>{{ selectedWell.wellNumber }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Название</span><span>{{ selectedWell.name }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Месторождение</span
+              ><span>{{ selectedWell.fieldName }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Регион</span><span>{{ selectedWell.region }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Статус</span
+              ><span>{{ formatStatus(selectedWell.status) }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Дата запуска</span
+              ><span>{{ selectedWell.launchDate }}</span>
+            </div>
           </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Дебит газа</span
-            ><span>{{ selectedWell.gasRate }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Обводненность</span
-            ><span>{{ selectedWell.waterCut }}%</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Глубина</span><span>{{ selectedWell.depth }} м</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Давление</span
-            ><span>{{ selectedWell.pressure }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Температура</span
-            ><span>{{ selectedWell.temperature }} °C</span>
-          </div>
-        </div>
 
-        <div class="well-details__section">
-          <div class="well-details__item">
-            <span class="well-details__label">Инженер</span><span>{{ selectedWell.engineer }}</span>
+          <div class="well-details__section">
+            <div class="well-details__item">
+              <span class="well-details__label">Дебит нефти</span
+              ><span>{{ selectedWell.oilRate }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Дебит газа</span
+              ><span>{{ selectedWell.gasRate }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Обводненность</span
+              ><span>{{ selectedWell.waterCut }}%</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Глубина</span
+              ><span>{{ selectedWell.depth }} м</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Давление</span
+              ><span>{{ selectedWell.pressure }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Температура</span
+              ><span>{{ selectedWell.temperature }} °C</span>
+            </div>
           </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Кластер</span><span>{{ selectedWell.cluster }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Последняя инспекция</span
-            ><span>{{ selectedWell.lastInspectionDate }}</span>
-          </div>
-          <div class="well-details__item">
-            <span class="well-details__label">Координаты</span
-            ><span>{{ selectedWell.lat }}, {{ selectedWell.lng }}</span>
+
+          <div class="well-details__section">
+            <div class="well-details__item">
+              <span class="well-details__label">Инженер</span
+              ><span>{{ selectedWell.engineer }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Кластер</span
+              ><span>{{ selectedWell.cluster }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Последняя инспекция</span
+              ><span>{{ selectedWell.lastInspectionDate }}</span>
+            </div>
+            <div class="well-details__item">
+              <span class="well-details__label">Координаты</span
+              ><span>{{ selectedWell.lat }}, {{ selectedWell.lng }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -218,6 +243,12 @@ export default Vue.extend({
     WellKpi,
     WellChart,
     WellMap
+  },
+
+  data() {
+    return {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
   },
 
   computed: {
@@ -270,10 +301,20 @@ export default Vue.extend({
           this.$store.dispatch('well/closeDetails')
         }
       }
+    },
+
+    drawerSize(): string {
+      if (this.windowWidth <= 575) return '100%'
+      if (this.windowWidth <= 991) return '70%'
+      return '420px'
     }
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
+
     handleSearchInput(value: string) {
       this.$store.dispatch('well/updateFilters', { search: value })
     },
@@ -353,6 +394,11 @@ export default Vue.extend({
 
   mounted() {
     this.$store.dispatch('well/fetchWells')
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   }
 })
 </script>
@@ -481,6 +527,146 @@ export default Vue.extend({
 
   .well-page__filters-grid {
     grid-template-columns: 1fr;
+  }
+}
+.well-drawer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.well-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--neutral-gray-4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.well-drawer__header-content {
+  min-width: 0;
+}
+
+.well-drawer__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--label-primary);
+}
+
+.well-drawer__subtitle {
+  margin: 6px 0 0;
+  color: var(--label-secondary);
+  word-break: break-word;
+}
+
+.well-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.well-details {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.well-details__section {
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.well-details__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--neutral-gray-3);
+}
+
+.well-details__item:last-child {
+  border-bottom: none;
+}
+
+.well-details__label {
+  color: var(--label-secondary);
+  flex-shrink: 0;
+}
+
+.well-details__item span:last-child {
+  text-align: right;
+  word-break: break-word;
+}
+
+:deep(.well-page__drawer) {
+  max-width: 100%;
+}
+
+:deep(.well-page__drawer .el-drawer__body) {
+  padding: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 991px) {
+  .well-drawer__header {
+    padding: 16px 16px 12px;
+  }
+
+  .well-details {
+    padding: 12px 16px 16px;
+  }
+}
+
+@media (max-width: 575px) {
+  .well-drawer__title {
+    font-size: 18px;
+  }
+
+  .well-drawer__subtitle {
+    font-size: 13px;
+  }
+
+  .well-drawer__close {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    border-radius: 8px;
+  }
+
+  .well-details {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .well-details__section {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .well-details__item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .well-details__item span:last-child {
+    text-align: left;
   }
 }
 </style>

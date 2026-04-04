@@ -168,35 +168,30 @@ export default Vue.extend({
 <style scoped>
 .tank-chart {
   border-radius: 18px;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .tank-chart__header {
   margin-bottom: 12px;
-}
-
-.tank-chart__title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.tank-chart__subtitle {
-  margin: 6px 0 0;
-  color: var(--label-secondary);
-  font-size: 13px;
+  flex: 0 0 auto;
 }
 
 .tank-chart__body,
 .tank-chart__skeleton {
-  height: 360px;
+  flex: 1 1 auto;
+  min-height: 260px;
 }
 
-.tank-chart__skeleton {
-  border-radius: 12px;
-  background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
-  background-size: 200% 100%;
-  animation: tank-chart-skeleton-loading 1.4s infinite;
+.tank-chart__body {
+  position: relative;
+}
+
+.tank-chart__body canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 @keyframes tank-chart-skeleton-loading {

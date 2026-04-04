@@ -1,6 +1,23 @@
 <template>
-  <el-aside class="app-sidebar" width="240px">
-    <div class="app-sidebar__logo"></div>
+  <el-aside
+    class="app-sidebar"
+    :class="{
+      'app-sidebar--mobile-open': isMobileOpen
+    }"
+    width="240px"
+  >
+    <div class="app-sidebar__logo">
+      <span class="app-sidebar__logo-text">Micro Dashboard</span>
+
+      <button
+        type="button"
+        class="app-sidebar__close"
+        aria-label="Закрыть меню"
+        @click="handleCloseMobile"
+      >
+        ×
+      </button>
+    </div>
 
     <el-menu
       class="app-sidebar__menu"
@@ -13,6 +30,7 @@
         :key="item.key"
         :index="item.path"
         class="app-sidebar__menu-item"
+        @click="handleMenuItemClick"
       >
         <i v-if="item.icon" :class="item.icon" class="app-sidebar__icon" />
 
@@ -33,6 +51,24 @@
 
 <script setup lang="ts">
 import { sidebarConfig } from '../lib/sidebar.config.constants'
+
+const props = defineProps<{
+  isMobileOpen?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'close-mobile'): void
+}>()
+
+const handleCloseMobile = () => {
+  emit('close-mobile')
+}
+
+const handleMenuItemClick = () => {
+  if (props.isMobileOpen) {
+    emit('close-mobile')
+  }
+}
 </script>
 
 <style scoped>
@@ -42,20 +78,39 @@ import { sidebarConfig } from '../lib/sidebar.config.constants'
   flex-direction: column;
   border-right: 1px solid var(--neutral-gray-5);
   min-height: 100vh;
+  width: 240px !important;
 }
 
 .app-sidebar__logo {
   height: 60px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
   color: var(--label-primary);
+  flex-shrink: 0;
+}
+
+.app-sidebar__logo-text {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.app-sidebar__close {
+  display: none;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .app-sidebar__menu {
   border-right: none;
   flex: 1;
   padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .app-sidebar__menu :deep(.el-menu-item.is-active .app-sidebar__label) {
@@ -87,6 +142,8 @@ import { sidebarConfig } from '../lib/sidebar.config.constants'
   border-radius: 12px;
   padding: 0 16px !important;
   min-width: 0;
+  height: 48px;
+  line-height: 48px;
 }
 
 .app-sidebar__label {
@@ -96,5 +153,45 @@ import { sidebarConfig } from '../lib/sidebar.config.constants'
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1100;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.15);
+    border-right: none;
+  }
+
+  .app-sidebar--mobile-open {
+    transform: translateX(0);
+  }
+
+  .app-sidebar__close {
+    display: inline-block;
+  }
+
+  .app-sidebar__menu {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 575px) {
+  .app-sidebar {
+    width: min(280px, 88vw) !important;
+  }
+
+  .app-sidebar__logo {
+    padding: 0 16px;
+  }
+
+  .app-sidebar__menu :deep(.el-menu-item) {
+    padding: 0 12px !important;
+  }
 }
 </style>

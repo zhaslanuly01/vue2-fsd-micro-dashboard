@@ -209,29 +209,25 @@ export default Vue.extend({
   height: 100%;
 }
 
+/* важно */
+.tank-map :deep(.el-card__body) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .tank-map__header {
   margin-bottom: 12px;
-}
-
-.tank-map__title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.tank-map__subtitle {
-  margin: 6px 0 0;
-  color: var(--label-secondary);
-  font-size: 13px;
+  flex: 0 0 auto;
 }
 
 .tank-map__container,
 .tank-map__skeleton {
-  height: 720px;
+  flex: 1 1 auto;
+  min-height: 320px;
   border-radius: 12px;
   overflow: hidden;
 }
-
 .tank-map__skeleton {
   background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
   background-size: 200% 100%;

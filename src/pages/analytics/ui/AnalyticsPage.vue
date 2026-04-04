@@ -14,31 +14,45 @@
 
     <div v-else class="analytics-page__grid">
       <ChartCard title="Скважины (статусы)">
-        <canvas ref="wellsChart"></canvas>
+        <div class="analytics-page__chart-box analytics-page__chart-box--pie">
+          <canvas ref="wellsChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Оборудование">
-        <canvas ref="equipmentChart"></canvas>
+        <div class="analytics-page__chart-box">
+          <canvas ref="equipmentChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Заявки (по датам)">
-        <canvas ref="requestsChart"></canvas>
+        <div class="analytics-page__chart-box">
+          <canvas ref="requestsChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Резервуары">
-        <canvas ref="tanksChart"></canvas>
+        <div class="analytics-page__chart-box analytics-page__chart-box--pie">
+          <canvas ref="tanksChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Экология">
-        <canvas ref="ecoChart"></canvas>
+        <div class="analytics-page__chart-box">
+          <canvas ref="ecoChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Pipeline">
-        <canvas ref="pipelineChart"></canvas>
+        <div class="analytics-page__chart-box">
+          <canvas ref="pipelineChart"></canvas>
+        </div>
       </ChartCard>
 
       <ChartCard title="Добыча по месторождениям">
-        <canvas ref="fieldsChart"></canvas>
+        <div class="analytics-page__chart-box">
+          <canvas ref="fieldsChart"></canvas>
+        </div>
       </ChartCard>
     </div>
   </div>
@@ -72,19 +86,43 @@ export default Vue.extend({
   data() {
     return {
       charts: [] as Chart[],
-      isLoading: true
+      isLoading: true,
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
+  },
+
+  computed: {
+    isMobile(): boolean {
+      return this.windowWidth <= 767
+    },
+
+    isTablet(): boolean {
+      return this.windowWidth <= 1200
     }
   },
 
   mounted() {
     this.loadAnalytics()
+    window.addEventListener('resize', this.handleResize)
   },
 
   beforeDestroy() {
     this.charts.forEach((c) => c.destroy())
+    window.removeEventListener('resize', this.handleResize)
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+
+      clearTimeout((this as any)._resizeTimer)
+      ;(this as any)._resizeTimer = setTimeout(() => {
+        if (!this.isLoading) {
+          this.initCharts()
+        }
+      }, 150)
+    },
+
     createChart(el: HTMLCanvasElement, config: any) {
       const chart = new Chart(el, config)
       this.charts.push(chart)
@@ -115,7 +153,94 @@ export default Vue.extend({
       this.initFieldsChart()
     },
 
-    // 1. Wells (pie)
+    getCommonChartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          display: true,
+          position: this.isMobile ? 'bottom' : 'top',
+          labels: {
+            boxWidth: this.isMobile ? 10 : 14,
+            fontSize: this.isMobile ? 10 : 12,
+            padding: this.isMobile ? 10 : 16
+          }
+        },
+        layout: {
+          padding: {
+            top: 8,
+            right: this.isMobile ? 4 : 8,
+            bottom: 4,
+            left: this.isMobile ? 4 : 8
+          }
+        }
+      }
+    },
+
+    getCartesianOptions() {
+      return {
+        ...this.getCommonChartOptions(),
+        tooltips: {
+          mode: 'index',
+          intersect: false
+        },
+        hover: {
+          mode: 'nearest',
+          intersect: true
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: this.isMobile ? 4 : 8,
+                maxRotation: this.isMobile ? 0 : 30,
+                minRotation: 0,
+                fontSize: this.isMobile ? 10 : 12
+              },
+              gridLines: {
+                display: false
+              }
+            }
+          ],
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                fontSize: this.isMobile ? 10 : 12,
+                maxTicksLimit: this.isMobile ? 5 : 7
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    getPieOptions() {
+      return {
+        ...this.getCommonChartOptions(),
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            boxWidth: this.isMobile ? 10 : 12,
+            fontSize: this.isMobile ? 10 : 12,
+            padding: this.isMobile ? 8 : 12
+          }
+        }
+      }
+    },
+
+    formatDateLabel(date: string) {
+      if (!this.isMobile) return date
+      return date.slice(5) // MM-DD
+    },
+
+    formatFieldLabel(label: string) {
+      if (!this.isMobile) return label
+      return label.length > 10 ? `${label.slice(0, 10)}...` : label
+    },
+
     initWellsChart() {
       const counts: Record<WellStatus, number> = {
         active: 0,
@@ -140,11 +265,11 @@ export default Vue.extend({
               backgroundColor: ['#67C23A', '#909399', '#E6A23C', '#F56C6C']
             }
           ]
-        }
+        },
+        options: this.getPieOptions()
       })
     },
 
-    // 2. Equipment (bar)
     initEquipmentChart() {
       const counts: Record<string, number> = {}
 
@@ -168,16 +293,10 @@ export default Vue.extend({
             }
           ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          legend: {
-            display: true
-          }
-        }
+        options: this.getCartesianOptions()
       })
     },
-    // 3. Requests (line)
+
     initRequestsChart() {
       const byDate: Record<string, number> = {}
 
@@ -191,7 +310,7 @@ export default Vue.extend({
       this.createChart(this.$refs.requestsChart as HTMLCanvasElement, {
         type: 'line',
         data: {
-          labels: keys,
+          labels: keys.map((key) => this.formatDateLabel(key)),
           datasets: [
             {
               label: 'Количество заявок',
@@ -201,11 +320,11 @@ export default Vue.extend({
               fill: false
             }
           ]
-        }
+        },
+        options: this.getCartesianOptions()
       })
     },
 
-    // 4. Tanks (pie)
     initTanksChart() {
       const counts: Record<string, number> = {}
 
@@ -227,11 +346,11 @@ export default Vue.extend({
               backgroundColor: ['#409EFF', '#E6A23C', '#F56C6C', '#D3D3D3']
             }
           ]
-        }
+        },
+        options: this.getPieOptions()
       })
     },
 
-    // 5. Eco (bar)
     initEcoChart() {
       const counts: Record<string, number> = {}
 
@@ -254,11 +373,11 @@ export default Vue.extend({
               backgroundColor: '#F56C6C'
             }
           ]
-        }
+        },
+        options: this.getCartesianOptions()
       })
     },
 
-    // 6. Pipeline (bar)
     initPipelineChart() {
       const counts: Record<string, number> = {}
 
@@ -281,11 +400,11 @@ export default Vue.extend({
               backgroundColor: '#909399'
             }
           ]
-        }
+        },
+        options: this.getCartesianOptions()
       })
     },
 
-    // 7. Fields (line)
     initFieldsChart() {
       const byField: Record<string, number> = {}
 
@@ -298,7 +417,7 @@ export default Vue.extend({
       this.createChart(this.$refs.fieldsChart as HTMLCanvasElement, {
         type: 'line',
         data: {
-          labels: keys,
+          labels: keys.map((key) => this.formatFieldLabel(key)),
           datasets: [
             {
               label: 'Месячная добыча',
@@ -308,7 +427,8 @@ export default Vue.extend({
               fill: false
             }
           ]
-        }
+        },
+        options: this.getCartesianOptions()
       })
     }
   }
@@ -318,30 +438,38 @@ export default Vue.extend({
 <style scoped>
 .analytics-page {
   padding: 0;
+  min-width: 0;
 }
 
 .analytics-page__header {
   margin-bottom: 12px;
 }
 
+.analytics-page__header h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.analytics-page__header p {
+  margin: 0;
+  color: #606266;
+}
+
 .analytics-page__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.chart-card {
-  border-radius: 16px;
-}
-
-.chart-body {
+.analytics-page__chart-box {
+  position: relative;
   height: 280px;
+  min-width: 0;
 }
 
-@media (max-width: 1200px) {
-  .analytics-page__grid {
-    grid-template-columns: 1fr;
-  }
+.analytics-page__chart-box--pie {
+  height: 320px;
 }
 
 .chart-skeleton {
@@ -349,6 +477,7 @@ export default Vue.extend({
   border-radius: 16px;
   background: #fff;
   border: 1px solid #ebeef5;
+  min-width: 0;
 }
 
 .chart-skeleton__title {
@@ -368,6 +497,67 @@ export default Vue.extend({
   background: linear-gradient(90deg, #f2f3f5 25%, #e9ecef 50%, #f2f3f5 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.4s infinite;
+}
+
+@media (max-width: 1200px) {
+  .analytics-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .analytics-page__header h1 {
+    font-size: 22px;
+  }
+
+  .analytics-page__header p {
+    font-size: 14px;
+  }
+
+  .analytics-page__grid {
+    gap: 12px;
+  }
+
+  .analytics-page__chart-box {
+    height: 220px;
+  }
+
+  .analytics-page__chart-box--pie {
+    height: 260px;
+  }
+
+  .chart-skeleton {
+    padding: 16px;
+  }
+
+  .chart-skeleton__body {
+    height: 220px;
+  }
+}
+
+@media (max-width: 575px) {
+  .analytics-page__chart-box {
+    height: 200px;
+  }
+
+  .analytics-page__chart-box--pie {
+    height: 240px;
+  }
+
+  .chart-skeleton {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .chart-skeleton__title {
+    width: 140px;
+    height: 16px;
+    margin-bottom: 12px;
+  }
+
+  .chart-skeleton__body {
+    height: 200px;
+  }
 }
 
 @keyframes skeleton-loading {

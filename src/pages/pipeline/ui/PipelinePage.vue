@@ -1,14 +1,16 @@
 <template>
   <div class="pipeline-page">
     <div class="pipeline-page__header">
-      <div>
+      <div class="pipeline-page__header-text">
         <h1 class="pipeline-page__title">Участки трубопровода</h1>
         <p class="pipeline-page__subtitle">
           Контроль состояния сети, давления, пропускной способности и инцидентов
         </p>
       </div>
 
-      <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
+      <el-button class="pipeline-page__reset-button" @click="handleResetFilters">
+        Сбросить фильтры
+      </el-button>
     </div>
 
     <PipelineKpi :loading="loading" />
@@ -103,13 +105,16 @@
         <el-table-column prop="pressure" label="Давление" min-width="120" sortable="custom" />
         <el-table-column prop="incidentsCount" label="Инциденты" min-width="120" sortable="custom">
           <template #default="{ row }">
-            <el-badge
-              :value="row.incidentsCount"
-              :max="99"
-              :type="getIncidentBadgeType(row.incidentsCount)"
-            >
-              <span class="pipeline-page__badge-label">Случаи</span>
-            </el-badge>
+            <div class="pipeline-page__incident-cell">
+              <div
+                class="pipeline-page__incident-count"
+                :class="`pipeline-page__incident-count--${getIncidentBadgeType(row.incidentsCount)}`"
+              >
+                {{ row.incidentsCount > 99 ? '99+' : row.incidentsCount }}
+              </div>
+
+              <span class="pipeline-page__incident-label">Случаи</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="lastInspectionDate" label="Последняя инспекция" min-width="160" />
@@ -139,102 +144,116 @@
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
-      size="460px"
+      :size="drawerSize"
       direction="rtl"
       :before-close="handleCloseDrawer"
+      custom-class="pipeline-page__drawer"
     >
       <div v-if="selectedPipeline" class="pipeline-drawer">
-        <div class="pipeline-drawer__hero">
-          <div>
+        <div class="pipeline-drawer__header">
+          <div class="pipeline-drawer__header-text">
             <div class="pipeline-drawer__eyebrow">Участок трубопровода</div>
             <div class="pipeline-drawer__title">{{ selectedPipeline.sectionName }}</div>
             <div class="pipeline-drawer__subtitle">{{ selectedPipeline.region }}</div>
           </div>
 
-          <el-tag :type="getStatusTagType(selectedPipeline.status)" effect="dark">
-            {{ formatStatus(selectedPipeline.status) }}
-          </el-tag>
+          <button
+            type="button"
+            class="pipeline-drawer__close"
+            aria-label="Закрыть"
+            @click="handleCloseDrawer"
+          >
+            ×
+          </button>
         </div>
 
-        <div class="pipeline-drawer__metrics">
-          <el-card shadow="never" class="pipeline-drawer__metric-card">
-            <div class="pipeline-drawer__metric-label">Длина</div>
-            <div class="pipeline-drawer__metric-value">{{ selectedPipeline.lengthKm }} км</div>
-          </el-card>
+        <div class="pipeline-drawer__content">
+          <div class="pipeline-drawer__hero">
+            <el-tag :type="getStatusTagType(selectedPipeline.status)" effect="dark">
+              {{ formatStatus(selectedPipeline.status) }}
+            </el-tag>
+          </div>
 
-          <el-card shadow="never" class="pipeline-drawer__metric-card">
-            <div class="pipeline-drawer__metric-label">Давление</div>
-            <div class="pipeline-drawer__metric-value">{{ selectedPipeline.pressure }}</div>
-          </el-card>
+          <div class="pipeline-drawer__metrics">
+            <el-card shadow="never" class="pipeline-drawer__metric-card">
+              <div class="pipeline-drawer__metric-label">Длина</div>
+              <div class="pipeline-drawer__metric-value">{{ selectedPipeline.lengthKm }} км</div>
+            </el-card>
 
-          <el-card shadow="never" class="pipeline-drawer__metric-card">
-            <div class="pipeline-drawer__metric-label">Пропускная способность</div>
-            <div class="pipeline-drawer__metric-value">
-              {{ formatNumber(selectedPipeline.throughput) }}
-            </div>
-          </el-card>
+            <el-card shadow="never" class="pipeline-drawer__metric-card">
+              <div class="pipeline-drawer__metric-label">Давление</div>
+              <div class="pipeline-drawer__metric-value">{{ selectedPipeline.pressure }}</div>
+            </el-card>
 
-          <el-card shadow="never" class="pipeline-drawer__metric-card">
-            <div class="pipeline-drawer__metric-label">Инциденты</div>
-            <div class="pipeline-drawer__metric-value">
-              {{ selectedPipeline.incidentsCount }}
-            </div>
-          </el-card>
-        </div>
+            <el-card shadow="never" class="pipeline-drawer__metric-card">
+              <div class="pipeline-drawer__metric-label">Пропускная способность</div>
+              <div class="pipeline-drawer__metric-value">
+                {{ formatNumber(selectedPipeline.throughput) }}
+              </div>
+            </el-card>
 
-        <el-card shadow="never" class="pipeline-drawer__risk-card">
-          <div class="pipeline-drawer__section-title">Риск-профиль</div>
-
-          <div class="pipeline-drawer__risk-list">
-            <div class="pipeline-drawer__risk-item">
-              <span>Давление</span>
-              <b :class="getPressureClass(selectedPipeline.pressure)">
-                {{ selectedPipeline.pressure }}
-              </b>
-            </div>
-            <div class="pipeline-drawer__risk-item">
-              <span>Инциденты</span>
-              <b :class="getIncidentClass(selectedPipeline.incidentsCount)">
+            <el-card shadow="never" class="pipeline-drawer__metric-card">
+              <div class="pipeline-drawer__metric-label">Инциденты</div>
+              <div class="pipeline-drawer__metric-value">
                 {{ selectedPipeline.incidentsCount }}
-              </b>
-            </div>
-            <div class="pipeline-drawer__risk-item">
-              <span>Последняя инспекция</span>
-              <b>{{ selectedPipeline.lastInspectionDate }}</b>
-            </div>
+              </div>
+            </el-card>
           </div>
-        </el-card>
 
-        <el-card shadow="never" class="pipeline-drawer__details-card">
-          <div class="pipeline-drawer__section-title">Паспорт участка</div>
+          <el-card shadow="never" class="pipeline-drawer__risk-card">
+            <div class="pipeline-drawer__section-title">Риск-профиль</div>
 
-          <div class="pipeline-drawer__details-list">
-            <div class="pipeline-drawer__details-item">
-              <span>ID</span>
-              <b>{{ selectedPipeline.id }}</b>
+            <div class="pipeline-drawer__risk-list">
+              <div class="pipeline-drawer__risk-item">
+                <span>Давление</span>
+                <b :class="getPressureClass(selectedPipeline.pressure)">
+                  {{ selectedPipeline.pressure }}
+                </b>
+              </div>
+              <div class="pipeline-drawer__risk-item">
+                <span>Инциденты</span>
+                <b :class="getIncidentClass(selectedPipeline.incidentsCount)">
+                  {{ selectedPipeline.incidentsCount }}
+                </b>
+              </div>
+              <div class="pipeline-drawer__risk-item">
+                <span>Последняя инспекция</span>
+                <b>{{ selectedPipeline.lastInspectionDate }}</b>
+              </div>
             </div>
-            <div class="pipeline-drawer__details-item">
-              <span>Название</span>
-              <b>{{ selectedPipeline.sectionName }}</b>
+          </el-card>
+
+          <el-card shadow="never" class="pipeline-drawer__details-card">
+            <div class="pipeline-drawer__section-title">Паспорт участка</div>
+
+            <div class="pipeline-drawer__details-list">
+              <div class="pipeline-drawer__details-item">
+                <span>ID</span>
+                <b>{{ selectedPipeline.id }}</b>
+              </div>
+              <div class="pipeline-drawer__details-item">
+                <span>Название</span>
+                <b>{{ selectedPipeline.sectionName }}</b>
+              </div>
+              <div class="pipeline-drawer__details-item">
+                <span>Регион</span>
+                <b>{{ selectedPipeline.region }}</b>
+              </div>
+              <div class="pipeline-drawer__details-item">
+                <span>Дата запуска</span>
+                <b>{{ selectedPipeline.startDate }}</b>
+              </div>
+              <div class="pipeline-drawer__details-item">
+                <span>Последняя инспекция</span>
+                <b>{{ selectedPipeline.lastInspectionDate }}</b>
+              </div>
+              <div class="pipeline-drawer__details-item">
+                <span>Координаты</span>
+                <b>{{ selectedPipeline.lat }}, {{ selectedPipeline.lng }}</b>
+              </div>
             </div>
-            <div class="pipeline-drawer__details-item">
-              <span>Регион</span>
-              <b>{{ selectedPipeline.region }}</b>
-            </div>
-            <div class="pipeline-drawer__details-item">
-              <span>Дата запуска</span>
-              <b>{{ selectedPipeline.startDate }}</b>
-            </div>
-            <div class="pipeline-drawer__details-item">
-              <span>Последняя инспекция</span>
-              <b>{{ selectedPipeline.lastInspectionDate }}</b>
-            </div>
-            <div class="pipeline-drawer__details-item">
-              <span>Координаты</span>
-              <b>{{ selectedPipeline.lat }}, {{ selectedPipeline.lng }}</b>
-            </div>
-          </div>
-        </el-card>
+          </el-card>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -260,6 +279,12 @@ export default Vue.extend({
     PipelineMap,
     PipelineStatusChart,
     PipelineThroughputChart
+  },
+
+  data() {
+    return {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
   },
 
   computed: {
@@ -299,6 +324,12 @@ export default Vue.extend({
       return this.$store.state.pipeline.highlightedPipelineId
     },
 
+    drawerSize(): string {
+      if (this.windowWidth <= 575) return '100%'
+      if (this.windowWidth <= 991) return '72%'
+      return '460px'
+    },
+
     isDrawerVisible: {
       get(): boolean {
         return Boolean(this.selectedPipeline)
@@ -312,6 +343,10 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
+
     handleSearchInput(value: string) {
       this.$store.dispatch('pipeline/updateFilters', { search: value })
     },
@@ -409,6 +444,11 @@ export default Vue.extend({
 
   mounted() {
     this.$store.dispatch('pipeline/fetchPipelineSections')
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   }
 })
 </script>
@@ -418,6 +458,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .pipeline-page__header {
@@ -427,16 +468,27 @@ export default Vue.extend({
   gap: 16px;
 }
 
+.pipeline-page__header-text {
+  min-width: 0;
+}
+
 .pipeline-page__title {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .pipeline-page__subtitle {
   margin: 8px 0 0;
   color: var(--label-secondary);
+  word-break: break-word;
+}
+
+.pipeline-page__reset-button {
+  flex-shrink: 0;
 }
 
 .pipeline-page__analytics-grid {
@@ -471,6 +523,7 @@ export default Vue.extend({
 .pipeline-page__table-meta {
   margin-bottom: 16px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .pipeline-page__alert {
@@ -491,6 +544,13 @@ export default Vue.extend({
   margin-top: 16px;
 }
 
+.pipeline-page__pagination :deep(.el-pagination) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .pipeline-page__empty {
   padding: 24px 0;
   color: var(--label-secondary);
@@ -500,19 +560,93 @@ export default Vue.extend({
   color: var(--label-secondary);
 }
 
+.pipeline-page__incident-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+}
+
+.pipeline-page__incident-count {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+
+.pipeline-page__incident-count--success {
+  background: #67c23a;
+}
+
+.pipeline-page__incident-count--warning {
+  background: #e6a23c;
+}
+
+.pipeline-page__incident-count--danger {
+  background: #f56c6c;
+}
+
+.pipeline-page__incident-label {
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--label-secondary);
+  text-align: center;
+}
+
 .pipeline-drawer {
+  min-height: 100%;
+  background: #f7f8fa;
+}
+
+.pipeline-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
   padding: 20px;
+  border-bottom: 1px solid var(--neutral-gray-4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pipeline-drawer__header-text {
+  min-width: 0;
+}
+
+.pipeline-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pipeline-drawer__content {
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #f7f8fa;
-  min-height: 100%;
 }
 
 .pipeline-drawer__hero {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -528,23 +662,27 @@ export default Vue.extend({
   font-weight: 700;
   line-height: 1.1;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .pipeline-drawer__subtitle {
   margin-top: 6px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .pipeline-drawer__metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  min-width: 0;
 }
 
 .pipeline-drawer__metric-card,
 .pipeline-drawer__risk-card,
 .pipeline-drawer__details-card {
   border-radius: 16px;
+  min-width: 0;
 }
 
 .pipeline-drawer__metric-label {
@@ -556,12 +694,15 @@ export default Vue.extend({
 .pipeline-drawer__metric-value {
   font-size: 22px;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .pipeline-drawer__section-title {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .pipeline-drawer__risk-list,
@@ -585,6 +726,13 @@ export default Vue.extend({
   border-bottom: none;
 }
 
+.pipeline-drawer__risk-item span,
+.pipeline-drawer__risk-item b,
+.pipeline-drawer__details-item span,
+.pipeline-drawer__details-item b {
+  word-break: break-word;
+}
+
 .pipeline-page__number--positive {
   color: #67c23a;
 }
@@ -597,6 +745,23 @@ export default Vue.extend({
   color: #f56c6c;
 }
 
+:deep(.pipeline-page__drawer) {
+  max-width: 100%;
+}
+
+:deep(.pipeline-page__drawer .el-drawer) {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden;
+}
+
+:deep(.pipeline-page__drawer .el-drawer__body) {
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 1280px) {
   .pipeline-page__analytics-grid {
     grid-template-columns: 1fr;
@@ -607,10 +772,36 @@ export default Vue.extend({
   }
 }
 
+@media (max-width: 991px) {
+  .pipeline-page__title {
+    font-size: 24px;
+  }
+
+  .pipeline-page__pagination {
+    justify-content: flex-start;
+  }
+
+  .pipeline-page__pagination :deep(.el-pagination) {
+    justify-content: flex-start;
+  }
+
+  .pipeline-drawer__header {
+    padding: 16px;
+  }
+
+  .pipeline-drawer__content {
+    padding: 12px 16px 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .pipeline-page__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .pipeline-page__reset-button {
+    width: 100%;
   }
 
   .pipeline-page__filters-grid {
@@ -619,6 +810,85 @@ export default Vue.extend({
 
   .pipeline-drawer__metrics {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .pipeline-page__title {
+    font-size: 22px;
+  }
+
+  .pipeline-page__subtitle {
+    font-size: 14px;
+  }
+
+  .pipeline-page__filters,
+  .pipeline-page__table-card {
+    border-radius: 14px;
+  }
+
+  .pipeline-page__table-meta {
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .pipeline-page__incident-cell {
+    gap: 4px;
+  }
+
+  .pipeline-page__incident-count {
+    min-width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .pipeline-page__incident-label {
+    font-size: 12px;
+  }
+
+  .pipeline-drawer__header {
+    padding: 12px;
+  }
+
+  .pipeline-drawer__content {
+    padding: 12px 12px 20px;
+    gap: 12px;
+  }
+
+  .pipeline-drawer__title {
+    font-size: 22px;
+  }
+
+  .pipeline-drawer__subtitle {
+    font-size: 13px;
+  }
+
+  .pipeline-drawer__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 22px;
+  }
+
+  .pipeline-drawer__metric-card,
+  .pipeline-drawer__risk-card,
+  .pipeline-drawer__details-card {
+    border-radius: 12px;
+  }
+
+  .pipeline-drawer__metric-value {
+    font-size: 18px;
+  }
+
+  .pipeline-drawer__section-title {
+    font-size: 14px;
+  }
+
+  .pipeline-drawer__risk-item,
+  .pipeline-drawer__details-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 </style>

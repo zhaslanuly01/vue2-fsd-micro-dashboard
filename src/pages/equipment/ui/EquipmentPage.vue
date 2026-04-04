@@ -1,14 +1,16 @@
 <template>
   <div class="equipment-page">
     <div class="equipment-page__header">
-      <div>
+      <div class="equipment-page__header-text">
         <h1 class="equipment-page__title">Оборудование</h1>
         <p class="equipment-page__subtitle">
           Мониторинг состояния, эффективности и сервисного цикла оборудования
         </p>
       </div>
 
-      <el-button @click="handleResetFilters">Сбросить фильтры</el-button>
+      <el-button class="equipment-page__reset-button" @click="handleResetFilters">
+        Сбросить фильтры
+      </el-button>
     </div>
 
     <EquipmentKpi :loading="loading" />
@@ -148,13 +150,14 @@
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
-      size="460px"
+      :size="drawerSize"
       direction="rtl"
       :before-close="handleCloseDrawer"
+      custom-class="equipment-page__drawer"
     >
       <div v-if="selectedEquipment" class="equipment-drawer">
-        <div class="equipment-drawer__hero">
-          <div>
+        <div class="equipment-drawer__header">
+          <div class="equipment-drawer__header-text">
             <div class="equipment-drawer__eyebrow">Единица оборудования</div>
             <div class="equipment-drawer__title">{{ selectedEquipment.name }}</div>
             <div class="equipment-drawer__subtitle">
@@ -162,79 +165,99 @@
             </div>
           </div>
 
-          <el-tag :type="getStatusTagType(selectedEquipment.status)" effect="dark">
-            {{ formatStatus(selectedEquipment.status) }}
-          </el-tag>
+          <button
+            type="button"
+            class="equipment-drawer__close"
+            aria-label="Закрыть"
+            @click="handleCloseDrawer"
+          >
+            ×
+          </button>
         </div>
 
-        <div class="equipment-drawer__metrics">
-          <el-card shadow="never" class="equipment-drawer__metric-card">
-            <div class="equipment-drawer__metric-label">Эффективность</div>
-            <div class="equipment-drawer__metric-value">{{ selectedEquipment.efficiency }}%</div>
-          </el-card>
+        <div class="equipment-drawer__content">
+          <div class="equipment-drawer__hero">
+            <el-tag :type="getStatusTagType(selectedEquipment.status)" effect="dark">
+              {{ formatStatus(selectedEquipment.status) }}
+            </el-tag>
+          </div>
 
-          <el-card shadow="never" class="equipment-drawer__metric-card">
-            <div class="equipment-drawer__metric-label">Моточасы</div>
-            <div class="equipment-drawer__metric-value">
-              {{ formatNumber(selectedEquipment.runtimeHours) }}
+          <div class="equipment-drawer__metrics">
+            <el-card shadow="never" class="equipment-drawer__metric-card">
+              <div class="equipment-drawer__metric-label">Эффективность</div>
+              <div class="equipment-drawer__metric-value">{{ selectedEquipment.efficiency }}%</div>
+            </el-card>
+
+            <el-card shadow="never" class="equipment-drawer__metric-card">
+              <div class="equipment-drawer__metric-label">Моточасы</div>
+              <div class="equipment-drawer__metric-value">
+                {{ formatNumber(selectedEquipment.runtimeHours) }}
+              </div>
+            </el-card>
+
+            <el-card shadow="never" class="equipment-drawer__metric-card">
+              <div class="equipment-drawer__metric-label">Температура</div>
+              <div class="equipment-drawer__metric-value">
+                {{ selectedEquipment.temperature }}°C
+              </div>
+            </el-card>
+
+            <el-card shadow="never" class="equipment-drawer__metric-card">
+              <div class="equipment-drawer__metric-label">Давление</div>
+              <div class="equipment-drawer__metric-value">
+                {{ selectedEquipment.pressure }}
+              </div>
+            </el-card>
+          </div>
+
+          <el-card shadow="never" class="equipment-drawer__health-card">
+            <div class="equipment-drawer__section-title">Техническое состояние</div>
+
+            <div class="equipment-drawer__health-progress">
+              <el-progress
+                :percentage="selectedEquipment.efficiency"
+                :stroke-width="progressStrokeWidth"
+                :show-text="showHealthProgressText"
+                :status="getEfficiencyStatus(selectedEquipment.efficiency)"
+              />
+            </div>
+
+            <div class="equipment-drawer__health-hint">
+              Следующее обслуживание: {{ selectedEquipment.nextMaintenanceDate }}
             </div>
           </el-card>
 
-          <el-card shadow="never" class="equipment-drawer__metric-card">
-            <div class="equipment-drawer__metric-label">Температура</div>
-            <div class="equipment-drawer__metric-value">{{ selectedEquipment.temperature }}°C</div>
-          </el-card>
+          <el-card shadow="never" class="equipment-drawer__details-card">
+            <div class="equipment-drawer__section-title">Технический паспорт</div>
 
-          <el-card shadow="never" class="equipment-drawer__metric-card">
-            <div class="equipment-drawer__metric-label">Давление</div>
-            <div class="equipment-drawer__metric-value">
-              {{ selectedEquipment.pressure }}
+            <div class="equipment-drawer__details-list">
+              <div class="equipment-drawer__details-item">
+                <span>ID</span>
+                <b>{{ selectedEquipment.id }}</b>
+              </div>
+              <div class="equipment-drawer__details-item">
+                <span>Тип</span>
+                <b>{{ formatType(selectedEquipment.type) }}</b>
+              </div>
+              <div class="equipment-drawer__details-item">
+                <span>Месторождение</span>
+                <b>{{ selectedEquipment.fieldName }}</b>
+              </div>
+              <div class="equipment-drawer__details-item">
+                <span>Дата установки</span>
+                <b>{{ selectedEquipment.installDate }}</b>
+              </div>
+              <div class="equipment-drawer__details-item">
+                <span>Следующее ТО</span>
+                <b>{{ selectedEquipment.nextMaintenanceDate }}</b>
+              </div>
+              <div class="equipment-drawer__details-item">
+                <span>Координаты</span>
+                <b>{{ selectedEquipment.lat }}, {{ selectedEquipment.lng }}</b>
+              </div>
             </div>
           </el-card>
         </div>
-
-        <el-card shadow="never" class="equipment-drawer__health-card">
-          <div class="equipment-drawer__section-title">Техническое состояние</div>
-          <el-progress
-            :percentage="selectedEquipment.efficiency"
-            :stroke-width="16"
-            :status="getEfficiencyStatus(selectedEquipment.efficiency)"
-          />
-          <div class="equipment-drawer__health-hint">
-            Следующее обслуживание: {{ selectedEquipment.nextMaintenanceDate }}
-          </div>
-        </el-card>
-
-        <el-card shadow="never" class="equipment-drawer__details-card">
-          <div class="equipment-drawer__section-title">Технический паспорт</div>
-
-          <div class="equipment-drawer__details-list">
-            <div class="equipment-drawer__details-item">
-              <span>ID</span>
-              <b>{{ selectedEquipment.id }}</b>
-            </div>
-            <div class="equipment-drawer__details-item">
-              <span>Тип</span>
-              <b>{{ formatType(selectedEquipment.type) }}</b>
-            </div>
-            <div class="equipment-drawer__details-item">
-              <span>Месторождение</span>
-              <b>{{ selectedEquipment.fieldName }}</b>
-            </div>
-            <div class="equipment-drawer__details-item">
-              <span>Дата установки</span>
-              <b>{{ selectedEquipment.installDate }}</b>
-            </div>
-            <div class="equipment-drawer__details-item">
-              <span>Следующее ТО</span>
-              <b>{{ selectedEquipment.nextMaintenanceDate }}</b>
-            </div>
-            <div class="equipment-drawer__details-item">
-              <span>Координаты</span>
-              <b>{{ selectedEquipment.lat }}, {{ selectedEquipment.lng }}</b>
-            </div>
-          </div>
-        </el-card>
       </div>
     </el-drawer>
   </div>
@@ -261,6 +284,12 @@ export default Vue.extend({
     EquipmentMap,
     EquipmentStatusChart,
     EquipmentMaintenanceList
+  },
+
+  data() {
+    return {
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
+    }
   },
 
   computed: {
@@ -304,6 +333,24 @@ export default Vue.extend({
       return this.$store.state.equipment.highlightedEquipmentId
     },
 
+    isMobile(): boolean {
+      return this.windowWidth <= 575
+    },
+
+    drawerSize(): string {
+      if (this.windowWidth <= 575) return '100%'
+      if (this.windowWidth <= 991) return '72%'
+      return '460px'
+    },
+
+    progressStrokeWidth(): number {
+      return this.isMobile ? 12 : 16
+    },
+
+    showHealthProgressText(): boolean {
+      return !this.isMobile
+    },
+
     isDrawerVisible: {
       get(): boolean {
         return Boolean(this.selectedEquipment)
@@ -317,6 +364,10 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      this.windowWidth = window.innerWidth
+    },
+
     handleSearchInput(value: string) {
       this.$store.dispatch('equipment/updateFilters', { search: value })
     },
@@ -417,6 +468,11 @@ export default Vue.extend({
 
   mounted() {
     this.$store.dispatch('equipment/fetchEquipment')
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   }
 })
 </script>
@@ -426,6 +482,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .equipment-page__header {
@@ -435,16 +492,27 @@ export default Vue.extend({
   gap: 16px;
 }
 
+.equipment-page__header-text {
+  min-width: 0;
+}
+
 .equipment-page__title {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .equipment-page__subtitle {
   margin: 8px 0 0;
   color: var(--label-secondary);
+  word-break: break-word;
+}
+
+.equipment-page__reset-button {
+  flex-shrink: 0;
 }
 
 .equipment-page__analytics-grid {
@@ -479,6 +547,7 @@ export default Vue.extend({
 .equipment-page__table-meta {
   margin-bottom: 16px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .equipment-page__alert {
@@ -499,6 +568,13 @@ export default Vue.extend({
   margin-top: 16px;
 }
 
+.equipment-page__pagination :deep(.el-pagination) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .equipment-page__empty {
   padding: 24px 0;
   color: var(--label-secondary);
@@ -509,18 +585,50 @@ export default Vue.extend({
 }
 
 .equipment-drawer {
+  min-height: 100%;
+  background: #f7f8fa;
+}
+
+.equipment-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
   padding: 20px;
+  border-bottom: 1px solid var(--neutral-gray-4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.equipment-drawer__header-text {
+  min-width: 0;
+}
+
+.equipment-drawer__close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--neutral-gray-4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.equipment-drawer__content {
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #f7f8fa;
-  min-height: 100%;
 }
 
 .equipment-drawer__hero {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -536,23 +644,27 @@ export default Vue.extend({
   font-weight: 700;
   line-height: 1.1;
   color: var(--label-primary);
+  word-break: break-word;
 }
 
 .equipment-drawer__subtitle {
   margin-top: 6px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .equipment-drawer__metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  min-width: 0;
 }
 
 .equipment-drawer__metric-card,
 .equipment-drawer__health-card,
 .equipment-drawer__details-card {
   border-radius: 16px;
+  min-width: 0;
 }
 
 .equipment-drawer__metric-label {
@@ -564,18 +676,31 @@ export default Vue.extend({
 .equipment-drawer__metric-value {
   font-size: 22px;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .equipment-drawer__section-title {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.equipment-drawer__health-progress {
+  width: 100%;
+  min-width: 0;
+}
+
+.equipment-drawer__health-progress :deep(.el-progress) {
+  width: 100%;
 }
 
 .equipment-drawer__health-hint {
   margin-top: 10px;
   font-size: 13px;
   color: var(--label-secondary);
+  word-break: break-word;
 }
 
 .equipment-drawer__details-list {
@@ -596,6 +721,28 @@ export default Vue.extend({
   border-bottom: none;
 }
 
+.equipment-drawer__details-item span,
+.equipment-drawer__details-item b {
+  word-break: break-word;
+}
+
+:deep(.equipment-page__drawer) {
+  max-width: 100%;
+}
+
+:deep(.equipment-page__drawer .el-drawer) {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden;
+}
+
+:deep(.equipment-page__drawer .el-drawer__body) {
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 1280px) {
   .equipment-page__analytics-grid {
     grid-template-columns: 1fr;
@@ -606,10 +753,36 @@ export default Vue.extend({
   }
 }
 
+@media (max-width: 991px) {
+  .equipment-page__title {
+    font-size: 24px;
+  }
+
+  .equipment-page__pagination {
+    justify-content: flex-start;
+  }
+
+  .equipment-page__pagination :deep(.el-pagination) {
+    justify-content: flex-start;
+  }
+
+  .equipment-drawer__header {
+    padding: 16px;
+  }
+
+  .equipment-drawer__content {
+    padding: 12px 16px 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .equipment-page__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .equipment-page__reset-button {
+    width: 100%;
   }
 
   .equipment-page__filters-grid {
@@ -618,6 +791,74 @@ export default Vue.extend({
 
   .equipment-drawer__metrics {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .equipment-page__title {
+    font-size: 22px;
+  }
+
+  .equipment-page__subtitle {
+    font-size: 14px;
+  }
+
+  .equipment-page__filters,
+  .equipment-page__table-card {
+    border-radius: 14px;
+  }
+
+  .equipment-page__table-meta {
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .equipment-page__progress-cell {
+    min-width: 100px;
+  }
+
+  .equipment-drawer__header {
+    padding: 12px;
+  }
+
+  .equipment-drawer__content {
+    padding: 12px 12px 20px;
+    gap: 12px;
+  }
+
+  .equipment-drawer__title {
+    font-size: 22px;
+  }
+
+  .equipment-drawer__subtitle {
+    font-size: 13px;
+  }
+
+  .equipment-drawer__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 22px;
+  }
+
+  .equipment-drawer__metric-card,
+  .equipment-drawer__health-card,
+  .equipment-drawer__details-card {
+    border-radius: 12px;
+  }
+
+  .equipment-drawer__metric-value {
+    font-size: 18px;
+  }
+
+  .equipment-drawer__section-title {
+    font-size: 14px;
+  }
+
+  .equipment-drawer__details-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 </style>
