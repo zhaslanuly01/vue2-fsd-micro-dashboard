@@ -2,6 +2,7 @@
   <el-header class="app-header">
     <div class="app-header__left">
       <button
+        v-if="isMobile"
         type="button"
         class="app-header__burger"
         aria-label="Открыть меню"
@@ -34,6 +35,10 @@ import { computed } from 'vue'
 import { store } from '@/app/providers/store'
 import { getUserFullName, type User } from '@/entities/user'
 import { router } from '@/app/providers/router/router'
+
+defineProps<{
+  isMobile?: boolean
+}>()
 
 const emit = defineEmits<{
   (e: 'toggle-sidebar'): void
@@ -78,7 +83,6 @@ const handleCommand = async (command: string) => {
 }
 
 .app-header__burger {
-  display: none;
   width: 40px;
   height: 40px;
   border: 1px solid var(--neutral-gray-5);
@@ -86,6 +90,7 @@ const handleCommand = async (command: string) => {
   border-radius: 10px;
   padding: 8px;
   cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -129,10 +134,6 @@ const handleCommand = async (command: string) => {
 @media (max-width: 991px) {
   .app-header {
     padding: 12px 16px;
-  }
-
-  .app-header__burger {
-    display: inline-flex;
   }
 }
 

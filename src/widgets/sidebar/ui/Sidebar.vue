@@ -2,7 +2,8 @@
   <el-aside
     class="app-sidebar"
     :class="{
-      'app-sidebar--mobile-open': isMobileOpen
+      'app-sidebar--mobile': isMobile,
+      'app-sidebar--mobile-open': isMobile && isMobileOpen
     }"
     width="240px"
   >
@@ -10,6 +11,7 @@
       <span class="app-sidebar__logo-text">Micro Dashboard</span>
 
       <button
+        v-if="isMobile"
         type="button"
         class="app-sidebar__close"
         aria-label="Закрыть меню"
@@ -54,6 +56,7 @@ import { sidebarConfig } from '../lib/sidebar.config.constants'
 
 const props = defineProps<{
   isMobileOpen?: boolean
+  isMobile?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -65,7 +68,7 @@ const handleCloseMobile = () => {
 }
 
 const handleMenuItemClick = () => {
-  if (props.isMobileOpen) {
+  if (props.isMobile) {
     emit('close-mobile')
   }
 }
@@ -97,7 +100,6 @@ const handleMenuItemClick = () => {
 }
 
 .app-sidebar__close {
-  display: none;
   border: none;
   background: transparent;
   font-size: 24px;
@@ -155,27 +157,23 @@ const handleMenuItemClick = () => {
   white-space: nowrap;
 }
 
+.app-sidebar--mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1100;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.15);
+  border-right: none;
+}
+
+.app-sidebar--mobile-open {
+  transform: translateX(0);
+}
+
 @media (max-width: 991px) {
-  .app-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 1100;
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    box-shadow: 0 10px 30px rgb(0 0 0 / 0.15);
-    border-right: none;
-  }
-
-  .app-sidebar--mobile-open {
-    transform: translateX(0);
-  }
-
-  .app-sidebar__close {
-    display: inline-block;
-  }
-
   .app-sidebar__menu {
     padding: 16px;
   }
