@@ -1,12 +1,17 @@
 <template>
   <el-card shadow="never" class="well-chart">
     <div class="well-chart__header">
-      <div>
+      <div class="well-chart__heading">
         <h3 class="well-chart__title">Распределение по статусам</h3>
         <p class="well-chart__subtitle">Клик по сектору применяет фильтр</p>
       </div>
 
-      <el-button v-if="!loading && activeChartStatus" type="text" @click="resetDrilldown">
+      <el-button
+        v-if="!loading && activeChartStatus"
+        type="text"
+        class="well-chart__reset"
+        @click="resetDrilldown"
+      >
         Сбросить drill-down
       </el-button>
     </div>
@@ -51,6 +56,8 @@ export default Vue.extend({
   },
 
   mounted() {
+    window.addEventListener('resize', this.handleResize)
+
     if (!this.loading) {
       this.$nextTick(() => {
         this.renderChart()
@@ -59,6 +66,8 @@ export default Vue.extend({
   },
 
   beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+
     if (this.chart) {
       this.chart.destroy()
       this.chart = null
@@ -83,6 +92,7 @@ export default Vue.extend({
     statusChartData: {
       handler() {
         if (this.loading) return
+
         this.$nextTick(() => {
           this.renderChart()
         })
@@ -92,6 +102,7 @@ export default Vue.extend({
 
     activeChartStatus() {
       if (this.loading) return
+
       this.$nextTick(() => {
         this.renderChart()
       })
@@ -99,6 +110,13 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      if (this.loading || !this.chart) return
+      this.$nextTick(() => {
+        this.chart && this.chart.resize()
+      })
+    },
+
     resetDrilldown() {
       this.$store.dispatch('well/drilldownByStatus', '')
     },
@@ -171,6 +189,10 @@ export default Vue.extend({
   margin-bottom: 12px;
 }
 
+.well-chart__heading {
+  min-width: 0;
+}
+
 .well-chart__title {
   margin: 0;
   font-size: 18px;
@@ -185,7 +207,11 @@ export default Vue.extend({
 
 .well-chart__body,
 .well-chart__skeleton {
-  height: 320px;
+  height: 380px;
+}
+
+.well-chart__body {
+  position: relative;
 }
 
 .well-chart__skeleton {
@@ -201,6 +227,39 @@ export default Vue.extend({
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@media (max-width: 991px) {
+  .well-chart__body,
+  .well-chart__skeleton {
+    height: 420px;
+  }
+}
+
+@media (max-width: 575px) {
+  .well-chart__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .well-chart__title {
+    font-size: 16px;
+  }
+
+  .well-chart__subtitle {
+    font-size: 12px;
+  }
+
+  .well-chart__body,
+  .well-chart__skeleton {
+    height: 340px;
+  }
+
+  .well-chart__reset {
+    align-self: flex-start;
+    padding-left: 0;
   }
 }
 </style>

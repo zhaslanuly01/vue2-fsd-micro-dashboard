@@ -157,15 +157,6 @@ export default Vue.extend({
       return {
         responsive: true,
         maintainAspectRatio: false,
-        legend: {
-          display: true,
-          position: this.isMobile ? 'bottom' : 'top',
-          labels: {
-            boxWidth: this.isMobile ? 10 : 14,
-            fontSize: this.isMobile ? 10 : 12,
-            padding: this.isMobile ? 10 : 16
-          }
-        },
         layout: {
           padding: {
             top: 8,
@@ -176,10 +167,153 @@ export default Vue.extend({
         }
       }
     },
+    getBarChartOptions(values: number[]) {
+      return {
+        ...this.getCommonChartOptions(),
+        legend: {
+          display: false
+        },
+        tooltips: {
+          mode: 'index',
+          intersect: false
+        },
+        hover: {
+          mode: 'nearest',
+          intersect: true
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: false,
+                maxRotation: this.isMobile ? 0 : 20,
+                minRotation: 0,
+                fontSize: this.isMobile ? 10 : 12
+              },
+              gridLines: {
+                display: false
+              },
+              categoryPercentage: 0.7,
+              barPercentage: 0.8
+            }
+          ],
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                max: this.getPaddedMax(values, 0.2),
+                fontSize: this.isMobile ? 10 : 12,
+                maxTicksLimit: this.isMobile ? 5 : 7,
+                callback: (value: number) => this.formatCompactNumber(value)
+              }
+            }
+          ]
+        }
+      }
+    },
+    getRequestsLineOptions(values: number[]) {
+      const max = this.getMaxValue(values)
+      const upperBound = Math.max(3, max + 1)
 
+      return {
+        ...this.getCommonChartOptions(),
+        legend: {
+          display: false
+        },
+        tooltips: {
+          mode: 'index',
+          intersect: false
+        },
+        hover: {
+          mode: 'nearest',
+          intersect: true
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: this.isMobile ? 4 : 8,
+                maxRotation: this.isMobile ? 0 : 30,
+                minRotation: 0,
+                fontSize: this.isMobile ? 10 : 12
+              },
+              gridLines: {
+                display: false
+              }
+            }
+          ],
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: false,
+                min: 0,
+                max: upperBound,
+                stepSize: 1,
+                fontSize: this.isMobile ? 10 : 12,
+                callback: (value: number) => String(value)
+              }
+            }
+          ]
+        }
+      }
+    },
+    getLargeLineChartOptions(values: number[]) {
+      return {
+        ...this.getCommonChartOptions(),
+        legend: {
+          display: false
+        },
+        tooltips: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: (tooltipItem: { yLabel: number }) => {
+              return ` ${tooltipItem.yLabel.toLocaleString('ru-RU')}`
+            }
+          }
+        },
+        hover: {
+          mode: 'nearest',
+          intersect: true
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: this.isMobile ? 5 : 7,
+                maxRotation: this.isMobile ? 0 : 28,
+                minRotation: 0,
+                fontSize: this.isMobile ? 10 : 12
+              },
+              gridLines: {
+                display: false
+              }
+            }
+          ],
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                max: this.getPaddedMax(values, 0.15),
+                fontSize: this.isMobile ? 10 : 12,
+                maxTicksLimit: this.isMobile ? 5 : 6,
+                callback: (value: number) => this.formatCompactNumber(value)
+              }
+            }
+          ]
+        }
+      }
+    },
     getCartesianOptions() {
       return {
         ...this.getCommonChartOptions(),
+        legend: {
+          display: false
+        },
         tooltips: {
           mode: 'index',
           intersect: false
@@ -215,7 +349,6 @@ export default Vue.extend({
         }
       }
     },
-
     getPieOptions() {
       return {
         ...this.getCommonChartOptions(),
@@ -278,6 +411,7 @@ export default Vue.extend({
       })
 
       const keys = Object.keys(counts)
+      const values = keys.map((key) => counts[key])
 
       this.createChart(this.$refs.equipmentChart as HTMLCanvasElement, {
         type: 'bar',
@@ -287,13 +421,13 @@ export default Vue.extend({
           ),
           datasets: [
             {
-              label: 'Количество оборудования',
-              data: keys.map((key) => counts[key]),
+              label: 'Количество',
+              data: values,
               backgroundColor: '#409EFF'
             }
           ]
         },
-        options: this.getCartesianOptions()
+        options: this.getBarChartOptions(values)
       })
     },
 
@@ -305,7 +439,8 @@ export default Vue.extend({
         byDate[date] = (byDate[date] || 0) + 1
       })
 
-      const keys = Object.keys(byDate)
+      const keys = Object.keys(byDate).sort()
+      const values = keys.map((key) => byDate[key])
 
       this.createChart(this.$refs.requestsChart as HTMLCanvasElement, {
         type: 'line',
@@ -313,15 +448,19 @@ export default Vue.extend({
           labels: keys.map((key) => this.formatDateLabel(key)),
           datasets: [
             {
-              label: 'Количество заявок',
-              data: keys.map((key) => byDate[key]),
+              label: 'Количество',
+              data: values,
               borderColor: '#67C23A',
               backgroundColor: 'transparent',
-              fill: false
+              fill: false,
+              lineTension: 0.25,
+              pointRadius: this.isMobile ? 2 : 3,
+              pointHoverRadius: this.isMobile ? 4 : 5,
+              borderWidth: 3
             }
           ]
         },
-        options: this.getCartesianOptions()
+        options: this.getRequestsLineOptions(values)
       })
     },
 
@@ -359,6 +498,7 @@ export default Vue.extend({
       })
 
       const keys = Object.keys(counts)
+      const values = keys.map((key) => counts[key])
 
       this.createChart(this.$refs.ecoChart as HTMLCanvasElement, {
         type: 'bar',
@@ -368,13 +508,13 @@ export default Vue.extend({
           ),
           datasets: [
             {
-              label: 'Количество станций',
-              data: keys.map((key) => counts[key]),
+              label: 'Количество',
+              data: values,
               backgroundColor: '#F56C6C'
             }
           ]
         },
-        options: this.getCartesianOptions()
+        options: this.getBarChartOptions(values)
       })
     },
 
@@ -386,6 +526,7 @@ export default Vue.extend({
       })
 
       const keys = Object.keys(counts)
+      const values = keys.map((key) => counts[key])
 
       this.createChart(this.$refs.pipelineChart as HTMLCanvasElement, {
         type: 'bar',
@@ -395,13 +536,13 @@ export default Vue.extend({
           ),
           datasets: [
             {
-              label: 'Количество участков',
-              data: keys.map((key) => counts[key]),
+              label: 'Количество',
+              data: values,
               backgroundColor: '#909399'
             }
           ]
         },
-        options: this.getCartesianOptions()
+        options: this.getBarChartOptions(values)
       })
     },
 
@@ -413,6 +554,7 @@ export default Vue.extend({
       })
 
       const keys = Object.keys(byField)
+      const values = keys.map((key) => byField[key])
 
       this.createChart(this.$refs.fieldsChart as HTMLCanvasElement, {
         type: 'line',
@@ -420,16 +562,65 @@ export default Vue.extend({
           labels: keys.map((key) => this.formatFieldLabel(key)),
           datasets: [
             {
-              label: 'Месячная добыча',
-              data: keys.map((key) => byField[key]),
+              label: 'Добыча',
+              data: values,
               borderColor: '#409EFF',
               backgroundColor: 'transparent',
-              fill: false
+              fill: false,
+              lineTension: 0.25,
+              pointRadius: this.isMobile ? 2 : 3,
+              pointHoverRadius: this.isMobile ? 4 : 5,
+              borderWidth: 3
             }
           ]
         },
-        options: this.getCartesianOptions()
+        options: this.getLargeLineChartOptions(values)
       })
+    },
+    formatCompactNumber(value: number): string {
+      if (value >= 1000000) {
+        return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`
+      }
+
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`
+      }
+
+      return String(value)
+    },
+
+    getMaxValue(values: number[]): number {
+      if (!values.length) return 0
+      return Math.max(...values)
+    },
+
+    getPaddedMax(values: number[], ratio = 0.15): number {
+      const max = this.getMaxValue(values)
+      if (max === 0) return 1
+
+      const padded = max + max * ratio
+
+      if (max <= 5) {
+        return Math.ceil(padded)
+      }
+
+      if (max <= 100) {
+        return Math.ceil(padded / 5) * 5
+      }
+
+      if (max <= 1000) {
+        return Math.ceil(padded / 50) * 50
+      }
+
+      if (max <= 10000) {
+        return Math.ceil(padded / 500) * 500
+      }
+
+      if (max <= 100000) {
+        return Math.ceil(padded / 5000) * 5000
+      }
+
+      return Math.ceil(padded / 50000) * 50000
     }
   }
 })

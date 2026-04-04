@@ -402,7 +402,6 @@ export default Vue.extend({
   }
 })
 </script>
-
 <style scoped>
 .well-page {
   padding: 0;
@@ -434,6 +433,7 @@ export default Vue.extend({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: stretch;
 }
 
 .well-page__filters,
@@ -517,7 +517,8 @@ export default Vue.extend({
 
 @media (max-width: 768px) {
   .well-page {
-    padding: 16px;
+    padding: 12px;
+    gap: 12px;
   }
 
   .well-page__header {
@@ -525,10 +526,28 @@ export default Vue.extend({
     align-items: stretch;
   }
 
+  .well-page__title {
+    font-size: 24px;
+  }
+
+  .well-page__subtitle {
+    font-size: 14px;
+  }
+
+  .well-page__analytics-grid {
+    gap: 12px;
+  }
+
   .well-page__filters-grid {
     grid-template-columns: 1fr;
   }
+
+  .well-page__pagination {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
 }
+
 .well-drawer {
   height: 100%;
   display: flex;

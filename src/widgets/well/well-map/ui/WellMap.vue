@@ -50,6 +50,8 @@ export default Vue.extend({
   },
 
   mounted() {
+    window.addEventListener('resize', this.handleResize)
+
     if (!this.loading) {
       this.$nextTick(() => {
         this.initMap()
@@ -59,6 +61,8 @@ export default Vue.extend({
   },
 
   beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+
     if (this.map) {
       this.map.remove()
       this.map = null
@@ -80,13 +84,18 @@ export default Vue.extend({
       this.$nextTick(() => {
         this.initMap()
         this.renderMarkers()
+        this.invalidateMapSize()
       })
     },
 
     items: {
       handler() {
         if (this.loading) return
-        this.renderMarkers()
+
+        this.$nextTick(() => {
+          this.renderMarkers()
+          this.invalidateMapSize()
+        })
       },
       deep: true
     },
@@ -98,6 +107,20 @@ export default Vue.extend({
   },
 
   methods: {
+    handleResize() {
+      this.invalidateMapSize()
+    },
+
+    invalidateMapSize() {
+      if (!this.map) return
+
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.map && this.map.invalidateSize()
+        }, 50)
+      })
+    },
+
     initMap() {
       if (this.map) return
 
@@ -112,6 +135,8 @@ export default Vue.extend({
 
       this.markersLayer = L.markerClusterGroup()
       this.map.addLayer(this.markersLayer)
+
+      this.invalidateMapSize()
     },
 
     getMarkerColor(status: Well['status']): string {
@@ -153,7 +178,10 @@ export default Vue.extend({
       this.markersLayer.clearLayers()
       this.markersMap.clear()
 
-      if (!this.items.length) return
+      if (!this.items.length) {
+        this.invalidateMapSize()
+        return
+      }
 
       const bounds: Array<[number, number]> = []
 
@@ -193,11 +221,17 @@ export default Vue.extend({
         bounds.push([well.lat, well.lng])
       })
 
-      if (bounds.length === 1) {
-        this.map.setView(bounds[0], 8)
-      } else {
-        this.map.fitBounds(bounds, { padding: [20, 20] })
-      }
+      this.$nextTick(() => {
+        this.invalidateMapSize()
+
+        if (!this.map) return
+
+        if (bounds.length === 1) {
+          this.map.setView(bounds[0], 8)
+        } else {
+          this.map.fitBounds(bounds, { padding: [20, 20] })
+        }
+      })
     }
   }
 })
@@ -227,7 +261,7 @@ export default Vue.extend({
 
 .well-map__container,
 .well-map__skeleton {
-  height: 320px;
+  height: 380px;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -244,6 +278,28 @@ export default Vue.extend({
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+@media (max-width: 991px) {
+  .well-map__container,
+  .well-map__skeleton {
+    height: 420px;
+  }
+}
+
+@media (max-width: 575px) {
+  .well-map__title {
+    font-size: 16px;
+  }
+
+  .well-map__subtitle {
+    font-size: 12px;
+  }
+
+  .well-map__container,
+  .well-map__skeleton {
+    height: 340px;
   }
 }
 </style>

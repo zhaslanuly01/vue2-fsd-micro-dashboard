@@ -36,12 +36,6 @@ const routes: RouteConfig[] = [
     meta: authMeta
   },
   {
-    path: '/well',
-    name: 'well',
-    component: WellPage,
-    meta: authMeta
-  },
-  {
     path: '/storage-tank',
     name: 'storage-tank',
     component: StorageTankPage,
@@ -69,6 +63,12 @@ const routes: RouteConfig[] = [
     path: '/maintenance-requests',
     name: 'maintenance-requests',
     component: MaintenanceRequestPage,
+    meta: authMeta
+  },
+  {
+    path: '/well',
+    name: 'well',
+    component: WellPage,
     meta: authMeta
   },
   {
