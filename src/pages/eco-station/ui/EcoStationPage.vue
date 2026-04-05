@@ -152,6 +152,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="eco-station"
+      :filters="aiFilters"
+      :selected-item="selectedStation"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -273,6 +283,8 @@ import { EcoStationKpi } from '@/widgets/eco-station/eco-station-kpi'
 import { EcoStationMap } from '@/widgets/eco-station/eco-station-map'
 import { EcoStationStatusChart } from '@/widgets/eco-station/eco-station-status-chart'
 import { EcoStationEmissionChart } from '@/widgets/eco-station/eco-station-emission-chart'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'EcoStationPage',
@@ -281,11 +293,14 @@ export default Vue.extend({
     EcoStationKpi,
     EcoStationMap,
     EcoStationStatusChart,
-    EcoStationEmissionChart
+    EcoStationEmissionChart,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -361,6 +376,48 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('ecoStation/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        region: this.filters.region,
+        fieldName: this.filters.fieldName,
+        responsibleUnit: this.filters.responsibleUnit,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        normalCount: items.filter((item) => item.status === 'normal').length,
+        attentionCount: items.filter((item) => item.status === 'attention').length,
+        criticalCount: items.filter((item) => item.status === 'critical').length,
+        averageEmissionLevel:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.emissionLevel, 0) / items.length)
+            : 0,
+        averageCo2Level:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.co2Level, 0) / items.length)
+            : 0,
+        averageH2sLevel:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.h2sLevel, 0) / items.length)
+            : 0,
+        averageWaterQualityIndex:
+          items.length > 0
+            ? Math.round(
+                items.reduce((sum, item) => sum + item.waterQualityIndex, 0) / items.length
+              )
+            : 0
       }
     }
   },

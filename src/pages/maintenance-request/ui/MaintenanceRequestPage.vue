@@ -174,6 +174,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="maintenance-request"
+      :filters="aiFilters"
+      :selected-item="selectedRequest"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -309,6 +319,8 @@ import { MaintenanceRequestMap } from '@/widgets/maintenance-request/maintenance
 import { MaintenanceRequestStatusChart } from '@/widgets/maintenance-request/maintenance-request-status-chart'
 import { MaintenanceRequestCostChart } from '@/widgets/maintenance-request/maintenance-request-cost-chart'
 import { REQUEST_STATUS_META } from '../model/maintenance-request.constants'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'MaintenanceRequestPage',
@@ -317,11 +329,14 @@ export default Vue.extend({
     MaintenanceRequestKpi,
     MaintenanceRequestMap,
     MaintenanceRequestStatusChart,
-    MaintenanceRequestCostChart
+    MaintenanceRequestCostChart,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -385,6 +400,35 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('maintenanceRequest/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        fieldName: this.filters.fieldName,
+        priority: this.filters.priority,
+        responsibleTeam: this.filters.responsibleTeam,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        lowPriorityCount: items.filter((item) => item.priority === 'low').length,
+        mediumPriorityCount: items.filter((item) => item.priority === 'medium').length,
+        highPriorityCount: items.filter((item) => item.priority === 'high').length,
+        totalCost: items.reduce((sum, item) => sum + item.cost, 0),
+        openCount: items.filter((item) => item.status === 'new').length,
+        inProgressCount: items.filter((item) => item.status === 'in_progress').length,
+        completedCount: items.filter((item) => item.status === 'completed').length,
+        overdueCount: items.filter((item) => item.status === 'overdue').length
       }
     }
   },

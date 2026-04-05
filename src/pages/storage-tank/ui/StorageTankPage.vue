@@ -209,6 +209,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="storage-tank"
+      :filters="aiFilters"
+      :selected-item="selectedTank"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -324,6 +334,8 @@ import type {
 import { StorageTankKpi } from '@/widgets/storage-tank/storage-tank-kpi'
 import { StorageTankChart } from '@/widgets/storage-tank/storage-tank-chart'
 import { StorageTankMap } from '@/widgets/storage-tank/storage-tank-map'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'StorageTankPage',
@@ -331,11 +343,14 @@ export default Vue.extend({
   components: {
     StorageTankKpi,
     StorageTankChart,
-    StorageTankMap
+    StorageTankMap,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -439,6 +454,38 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('storageTank/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        region: this.filters.region,
+        terminalName: this.filters.terminalName,
+        productType: this.filters.productType,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.filteredItems || []
+
+      return {
+        total: this.total,
+        visible: this.paginatedItems.length,
+        highLoadCount: items.filter((item) => item.status === 'high_load').length,
+        maintenanceCount: items.filter((item) => item.status === 'maintenance').length,
+        offlineCount: items.filter((item) => item.status === 'offline').length,
+        normalCount: items.filter((item) => item.status === 'normal').length,
+        totalDailyIntake: items.reduce((sum, item) => sum + item.dailyIntake, 0),
+        totalDailyShipment: items.reduce((sum, item) => sum + item.dailyShipment, 0),
+        netFlow: items.reduce((sum, item) => sum + item.dailyIntake - item.dailyShipment, 0),
+        averageFillPercent:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.fillPercent, 0) / items.length)
+            : 0
       }
     }
   },

@@ -10,6 +10,7 @@ import { PipelinePage } from '@/pages/pipeline'
 import { EcoStationPage } from '@/pages/eco-station'
 import { MaintenanceRequestPage } from '@/pages/maintenance-request'
 import { OilFieldPage } from '@/pages/oil-field'
+import { AIAnalyticsPage } from '@/pages/ai-analytics'
 
 Vue.use(Router)
 
@@ -33,6 +34,12 @@ const routes: RouteConfig[] = [
     path: '/',
     name: 'analytics',
     component: AnalyticsPage,
+    meta: authMeta
+  },
+  {
+    path: '/ai-analytics',
+    name: 'ai-analytics',
+    component: AIAnalyticsPage,
     meta: authMeta
   },
   {

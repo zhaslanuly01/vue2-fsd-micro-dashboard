@@ -147,6 +147,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="equipment"
+      :filters="aiFilters"
+      :selected-item="selectedEquipment"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -275,6 +285,8 @@ import { EquipmentKpi } from '@/widgets/equipment/equipment-kpi'
 import { EquipmentMap } from '@/widgets/equipment/equipment-map'
 import { EquipmentStatusChart } from '@/widgets/equipment/equipment-status-chart'
 import { EquipmentMaintenanceList } from '@/widgets/equipment/equipment-maintenance-list'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'EquipmentPage',
@@ -283,11 +295,14 @@ export default Vue.extend({
     EquipmentKpi,
     EquipmentMap,
     EquipmentStatusChart,
-    EquipmentMaintenanceList
+    EquipmentMaintenanceList,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -359,6 +374,30 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('equipment/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        fieldName: this.filters.fieldName,
+        type: this.filters.type,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        warningCount: items.filter((item) => item.status === 'warning').length,
+        criticalCount: items.filter((item) => item.status === 'critical').length,
+        offlineCount: items.filter((item) => item.status === 'offline').length,
+        operationalCount: items.filter((item) => item.status === 'operational').length
       }
     }
   },
