@@ -9,8 +9,6 @@
   </button>
 </template>
 
-<script lang="ts"></script>
-
 <style scoped>
 .ai-assistant-button {
   position: fixed;
