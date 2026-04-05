@@ -20,7 +20,9 @@ const openai = new OpenAI({
 
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN
+    origin: FRONTEND_ORIGIN,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 )
 

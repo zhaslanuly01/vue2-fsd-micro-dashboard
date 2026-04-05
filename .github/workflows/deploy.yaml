@@ -40,6 +40,7 @@ jobs:
           VITE_API_USER_PASSWORD: 'adminadmin'
           VITE_API_STORAGE_MODE: 'session'
           VITE_ENABLE_MSW: 'true'
+          VITE_AI_API_URL: 'https://vue2-fsd-micro-dashboard-backend.onrender.com'
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
