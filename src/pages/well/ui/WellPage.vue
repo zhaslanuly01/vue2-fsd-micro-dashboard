@@ -122,6 +122,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="well"
+      :filters="aiFilters"
+      :selected-item="selectedWell"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :size="drawerSize"
@@ -235,6 +245,8 @@ import type { Well, WellStatus, WellsFilters } from '@/entities/well/model/well.
 import { WellKpi } from '@/widgets/well/well-kpi'
 import { WellChart } from '@/widgets/well/well-chart'
 import { WellMap } from '@/widgets/well/well-map'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'WellPage',
@@ -242,11 +254,14 @@ export default Vue.extend({
   components: {
     WellKpi,
     WellChart,
-    WellMap
+    WellMap,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -307,6 +322,42 @@ export default Vue.extend({
       if (this.windowWidth <= 575) return '100%'
       if (this.windowWidth <= 991) return '70%'
       return '420px'
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        region: this.filters.region,
+        fieldName: this.filters.fieldName,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        activeCount: items.filter((item) => item.status === 'active').length,
+        inactiveCount: items.filter((item) => item.status === 'inactive').length,
+        maintenanceCount: items.filter((item) => item.status === 'maintenance').length,
+        conservationCount: items.filter((item) => item.status === 'conservation').length,
+        averageOilRate:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.oilRate, 0) / items.length)
+            : 0,
+        averagePressure:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.pressure, 0) / items.length)
+            : 0,
+        averageDepth:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.depth, 0) / items.length)
+            : 0
+      }
     }
   },
 
@@ -402,6 +453,7 @@ export default Vue.extend({
   }
 })
 </script>
+
 <style scoped>
 .well-page {
   padding: 0;

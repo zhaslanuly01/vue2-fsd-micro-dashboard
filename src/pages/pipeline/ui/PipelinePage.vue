@@ -141,6 +141,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="pipeline"
+      :filters="aiFilters"
+      :selected-item="selectedPipeline"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -270,6 +280,8 @@ import { PipelineKpi } from '@/widgets/pipeline/pipeline-kpi'
 import { PipelineMap } from '@/widgets/pipeline/pipeline-map'
 import { PipelineStatusChart } from '@/widgets/pipeline/pipeline-status-chart'
 import { PipelineThroughputChart } from '@/widgets/pipeline/pipeline-throughput-chart'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'PipelinePage',
@@ -278,11 +290,14 @@ export default Vue.extend({
     PipelineKpi,
     PipelineMap,
     PipelineStatusChart,
-    PipelineThroughputChart
+    PipelineThroughputChart,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -338,6 +353,39 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('pipeline/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        region: this.filters.region,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        operationalCount: items.filter((item) => item.status === 'operational').length,
+        inspectionCount: items.filter((item) => item.status === 'inspection').length,
+        repairCount: items.filter((item) => item.status === 'repair').length,
+        criticalCount: items.filter((item) => item.status === 'critical').length,
+        totalIncidents: items.reduce((sum, item) => sum + item.incidentsCount, 0),
+        averagePressure:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.pressure, 0) / items.length)
+            : 0,
+        averageThroughput:
+          items.length > 0
+            ? Math.round(items.reduce((sum, item) => sum + item.throughput, 0) / items.length)
+            : 0,
+        totalLengthKm: items.reduce((sum, item) => sum + item.lengthKm, 0)
       }
     }
   },

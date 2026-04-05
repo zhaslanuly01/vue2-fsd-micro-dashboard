@@ -180,6 +180,16 @@
       </div>
     </el-card>
 
+    <AiAssistantButton @click="isAiOpen = true" />
+
+    <AiAssistantDrawer
+      :visible.sync="isAiOpen"
+      page="oil-field"
+      :filters="aiFilters"
+      :selected-item="selectedField"
+      :stats="aiStats"
+    />
+
     <el-drawer
       :visible.sync="isDrawerVisible"
       :with-header="false"
@@ -310,6 +320,8 @@ import { OilFieldKpi } from '@/widgets/oil-field/oil-field-kpi'
 import { OilFieldMap } from '@/widgets/oil-field/oil-field-map'
 import { OilFieldStatusChart } from '@/widgets/oil-field/oil-field-status-chart'
 import { OilFieldProductionChart } from '@/widgets/oil-field/oil-field-production-chart'
+import { AiAssistantButton } from '@/features/ai-assistant'
+import { AiAssistantDrawer } from '@/features/ai-assistant'
 
 export default Vue.extend({
   name: 'OilFieldPage',
@@ -318,11 +330,14 @@ export default Vue.extend({
     OilFieldKpi,
     OilFieldMap,
     OilFieldStatusChart,
-    OilFieldProductionChart
+    OilFieldProductionChart,
+    AiAssistantButton,
+    AiAssistantDrawer
   },
 
   data() {
     return {
+      isAiOpen: false,
       windowWidth: typeof window !== 'undefined' ? window.innerWidth : 1440
     }
   },
@@ -394,6 +409,36 @@ export default Vue.extend({
         if (!value) {
           this.$store.dispatch('oilField/closeDetails')
         }
+      }
+    },
+
+    aiFilters(): Record<string, unknown> {
+      return {
+        search: this.filters.search,
+        status: this.filters.status,
+        region: this.filters.region,
+        contractor: this.filters.contractor,
+        page: this.filters.page,
+        pageSize: this.filters.pageSize
+      }
+    },
+
+    aiStats(): Record<string, unknown> {
+      const items = this.paginatedItems || []
+
+      return {
+        total: this.total,
+        visible: items.length,
+        stableCount: items.filter((item) => item.status === 'stable').length,
+        growingCount: items.filter((item) => item.status === 'growing').length,
+        decliningCount: items.filter((item) => item.status === 'declining').length,
+        riskCount: items.filter((item) => item.status === 'risk').length,
+        averagePlanExecution:
+          items.length > 0
+            ? Math.round(
+                items.reduce((sum, item) => sum + this.getPlanExecution(item), 0) / items.length
+              )
+            : 0
       }
     }
   },

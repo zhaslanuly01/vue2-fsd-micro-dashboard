@@ -3,13 +3,12 @@ import type { SidebarMenuItem } from '../model/sidebar_item.types'
 import analyticsIcon from '@/shared/assets/icons/analytics.svg'
 import ecoStationIcon from '@/shared/assets/icons/eco-station.svg'
 import equipmentIcon from '@/shared/assets/icons/equipment.svg'
-import homeIcon from '@/shared/assets/icons/home.svg'
 import maintenanceRequestIcon from '@/shared/assets/icons/maintenance-requests.svg'
 import oilFieldIcon from '@/shared/assets/icons/oil-field.svg'
 import pipelineSectionIcon from '@/shared/assets/icons/pipeline-section.svg'
-import settingsIcon from '@/shared/assets/icons/settings.svg'
 import storageTankIcon from '@/shared/assets/icons/storage-tank.svg'
 import wellIcon from '@/shared/assets/icons/well.svg'
+import chatIcon from '@/shared/assets/icons/chat.svg'
 
 export const sidebarConfig: SidebarMenuItem[] = [
   {
@@ -17,12 +16,6 @@ export const sidebarConfig: SidebarMenuItem[] = [
     label: 'Аналитика',
     path: '/',
     svgIcon: analyticsIcon
-  },
-  {
-    key: 'well',
-    label: 'Скважины',
-    path: '/well',
-    svgIcon: wellIcon
   },
   {
     key: 'oil-field',
@@ -59,5 +52,17 @@ export const sidebarConfig: SidebarMenuItem[] = [
     label: 'Транспортировка',
     path: '/pipeline-section',
     svgIcon: pipelineSectionIcon
+  },
+  {
+    key: 'well',
+    label: 'Скважины',
+    path: '/well',
+    svgIcon: wellIcon
+  },
+  {
+    key: 'ai-analytics',
+    label: 'AI Analytics',
+    path: '/ai-analytics',
+    svgIcon: chatIcon
   }
 ]
